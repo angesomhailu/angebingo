@@ -79,7 +79,7 @@ export default function Login() {
 
         {/* SSO Action Buttons (Vertically Stacked) */}
         <div className="space-y-3 mt-6">
-          <button 
+          <button
             type="button"
             onClick={() => handleSSO('google')}
             className="w-full flex items-center justify-center px-4 py-3 border border-white/10 rounded-full bg-slate-950/50 text-sm font-semibold text-slate-200 hover:bg-slate-800 transition-all hover:border-white/20"
@@ -93,7 +93,7 @@ export default function Login() {
             Continue with Google
           </button>
 
-          <button 
+          <button
             type="button"
             onClick={() => handleSSO('github')}
             className="w-full flex items-center justify-center px-4 py-3 border border-white/10 rounded-full bg-slate-950/50 text-sm font-semibold text-slate-200 hover:bg-slate-800 transition-all hover:border-white/20"
@@ -102,31 +102,6 @@ export default function Login() {
               <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z" />
             </svg>
             Continue with GitHub
-          </button>
-
-          <button 
-            type="button"
-            onClick={() => handleSSO('apple')}
-            className="w-full flex items-center justify-center px-4 py-3 border border-white/10 rounded-full bg-slate-950/50 text-sm font-semibold text-slate-200 hover:bg-slate-800 transition-all hover:border-white/20"
-          >
-            <svg className="w-5 h-5 mr-3 text-white" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-.1 3.81 1.5-1.37 1.14-1.74 3.02-.6 4.39.6 1.14 1.77 1.8 2.6 1.8.1-.03.2-.06.3-.09-.5 1.5-1.5 2.9-2.5 4.25M15.97 4.17c.66-.81 1.11-1.93.99-3.06-.96.04-2.13.64-2.82 1.45-.6.7-1.13 1.84-.99 2.94.1.03.2.05.3.05.86 0 1.95-.57 2.52-1.38z" />
-            </svg>
-            Continue with Apple
-          </button>
-
-          <button 
-            type="button"
-            onClick={() => handleSSO('microsoft')}
-            className="w-full flex items-center justify-center px-4 py-3 border border-white/10 rounded-full bg-slate-950/50 text-sm font-semibold text-slate-200 hover:bg-slate-800 transition-all hover:border-white/20"
-          >
-            <svg className="w-5 h-5 mr-3" viewBox="0 0 23 23" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 0h11v11H0z" fill="#f25022" />
-              <path d="M12 0h11v11H12z" fill="#7fba00" />
-              <path d="M0 12h11v11H0z" fill="#00a4ef" />
-              <path d="M12 12h11v11H12z" fill="#ffb900" />
-            </svg>
-            Continue with Microsoft
           </button>
         </div>
 

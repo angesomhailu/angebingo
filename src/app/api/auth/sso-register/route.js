@@ -49,6 +49,12 @@ export async function POST(request) {
             user = newUserRows[0];
         } else {
             user = rows[0];
+            if (user.status === 'suspended') {
+                return Response.json(
+                    { error: "Your account has been suspended. Please contact support." },
+                    { status: 403 }
+                );
+            }
         }
 
         // Create JWT

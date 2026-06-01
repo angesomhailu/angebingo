@@ -29,6 +29,12 @@ export async function POST(request) {
         }
 
         const user = rows[0];
+        if (user.status === 'suspended') {
+            return Response.json(
+                { error: "Your account has been suspended. Please contact support." },
+                { status: 403 }
+            );
+        }
         const isValidPassword = await bcrypt.compare(password, user.password);
 
         if (!isValidPassword) {
