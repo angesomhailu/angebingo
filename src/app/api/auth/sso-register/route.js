@@ -11,12 +11,24 @@ export async function POST(request) {
     try {
         const { provider, email: clientEmail, name: clientName } = await request.json();
         
-        if (!provider || (provider !== 'google' && provider !== 'facebook')) {
+        if (!provider || (provider !== 'google' && provider !== 'facebook' && provider !== 'github' && provider !== 'apple' && provider !== 'microsoft')) {
             return Response.json({ error: "Invalid provider" }, { status: 400 });
         }
 
-        const name = clientName || (provider === 'google' ? "Google Player" : "Facebook Player");
-        const email = clientEmail || (provider === 'google' ? "googleplayer@gmail.com" : "facebookplayer@gmail.com");
+        const name = clientName || (
+            provider === 'google' ? "Google Player" : 
+            provider === 'github' ? "GitHub Player" : 
+            provider === 'apple' ? "Apple Player" :
+            provider === 'microsoft' ? "Microsoft Player" :
+            "Facebook Player"
+        );
+        const email = clientEmail || (
+            provider === 'google' ? "googleplayer@gmail.com" : 
+            provider === 'github' ? "githubplayer@github.com" : 
+            provider === 'apple' ? "appleplayer@apple.com" :
+            provider === 'microsoft' ? "microsoftplayer@outlook.com" :
+            "facebookplayer@gmail.com"
+        );
         const placeholderPassword = "sso_placeholder_password_12345";
 
         const pool = await getDbConnection();

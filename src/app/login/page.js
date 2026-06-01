@@ -66,53 +66,108 @@ export default function Login() {
       {/* Background elements */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-fuchsia-600/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
 
-      <div className="max-w-md w-full space-y-8 p-10 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl relative overflow-hidden">
+      <div className="max-w-md w-full space-y-6 p-10 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl relative overflow-hidden">
         {/* Glow effect inside card */}
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/30 rounded-full blur-[50px] -z-10 pointer-events-none"></div>
 
         <div className="text-center">
-          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-tr from-fuchsia-600 to-indigo-600 flex items-center justify-center font-bold text-3xl shadow-[0_0_20px_rgba(192,38,211,0.5)] mb-6 text-white">
-            A
-          </div>
           <h2 className="text-3xl font-black text-white tracking-tight">Welcome back</h2>
           <p className="mt-2 text-sm text-slate-400">
             Sign in to your account to resume the fun
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          <div className="space-y-4">
+        {/* SSO Action Buttons (Vertically Stacked) */}
+        <div className="space-y-3 mt-6">
+          <button 
+            type="button"
+            onClick={() => handleSSO('google')}
+            className="w-full flex items-center justify-center px-4 py-3 border border-white/10 rounded-full bg-slate-950/50 text-sm font-semibold text-slate-200 hover:bg-slate-800 transition-all hover:border-white/20"
+          >
+            <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+            </svg>
+            Continue with Google
+          </button>
+
+          <button 
+            type="button"
+            onClick={() => handleSSO('github')}
+            className="w-full flex items-center justify-center px-4 py-3 border border-white/10 rounded-full bg-slate-950/50 text-sm font-semibold text-slate-200 hover:bg-slate-800 transition-all hover:border-white/20"
+          >
+            <svg className="w-5 h-5 mr-3 text-slate-400" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z" />
+            </svg>
+            Continue with GitHub
+          </button>
+
+          <button 
+            type="button"
+            onClick={() => handleSSO('apple')}
+            className="w-full flex items-center justify-center px-4 py-3 border border-white/10 rounded-full bg-slate-950/50 text-sm font-semibold text-slate-200 hover:bg-slate-800 transition-all hover:border-white/20"
+          >
+            <svg className="w-5 h-5 mr-3 text-white" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-.1 3.81 1.5-1.37 1.14-1.74 3.02-.6 4.39.6 1.14 1.77 1.8 2.6 1.8.1-.03.2-.06.3-.09-.5 1.5-1.5 2.9-2.5 4.25M15.97 4.17c.66-.81 1.11-1.93.99-3.06-.96.04-2.13.64-2.82 1.45-.6.7-1.13 1.84-.99 2.94.1.03.2.05.3.05.86 0 1.95-.57 2.52-1.38z" />
+            </svg>
+            Continue with Apple
+          </button>
+
+          <button 
+            type="button"
+            onClick={() => handleSSO('microsoft')}
+            className="w-full flex items-center justify-center px-4 py-3 border border-white/10 rounded-full bg-slate-950/50 text-sm font-semibold text-slate-200 hover:bg-slate-800 transition-all hover:border-white/20"
+          >
+            <svg className="w-5 h-5 mr-3" viewBox="0 0 23 23" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 0h11v11H0z" fill="#f25022" />
+              <path d="M12 0h11v11H12z" fill="#7fba00" />
+              <path d="M0 12h11v11H0z" fill="#00a4ef" />
+              <path d="M12 12h11v11H12z" fill="#ffb900" />
+            </svg>
+            Continue with Microsoft
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-white/10"></div>
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="px-3 bg-slate-900/80 text-slate-400 font-bold backdrop-blur-sm rounded-md tracking-wider">OR</span>
+          </div>
+        </div>
+
+        {/* Form Inputs (At the Bottom) */}
+        <form className="space-y-4" onSubmit={handleLogin}>
+          <div className="space-y-3">
             <div>
-              <label htmlFor="email-address" className="block text-sm font-medium text-slate-300 mb-1">
-                Email address
-              </label>
               <input
                 id="email-address"
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none relative block w-full px-4 py-3 bg-slate-950/50 border border-white/10 placeholder-slate-500 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent transition-all sm:text-sm"
-                placeholder="Enter your email"
+                className="appearance-none relative block w-full px-5 py-3.5 bg-slate-950/50 border border-white/10 placeholder-slate-500 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent transition-all sm:text-sm"
+                placeholder="Email address"
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
-                Password
-              </label>
               <input
                 id="password"
                 name="password"
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none relative block w-full px-4 py-3 bg-slate-950/50 border border-white/10 placeholder-slate-500 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent transition-all sm:text-sm"
-                placeholder="Enter your password"
+                className="appearance-none relative block w-full px-5 py-3.5 bg-slate-950/50 border border-white/10 placeholder-slate-500 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent transition-all sm:text-sm"
+                placeholder="Password"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between py-1 px-1">
             <div className="flex items-center">
               <input
                 id="remember-me"
@@ -120,13 +175,13 @@ export default function Login() {
                 type="checkbox"
                 className="h-4 w-4 rounded border-white/10 bg-slate-950 text-fuchsia-600 focus:ring-fuchsia-500 focus:ring-offset-slate-900"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-300">
+              <label htmlFor="remember-me" className="ml-2 block text-xs text-slate-400">
                 Remember me
               </label>
             </div>
 
-            <div className="text-sm">
-              <Link href="/forgot-password" className="font-medium text-fuchsia-400 hover:text-fuchsia-300 transition-colors">
+            <div className="text-xs">
+              <Link href="/forgot-password" className="font-semibold text-fuchsia-400 hover:text-fuchsia-300 transition-colors">
                 Forgot your password?
               </Link>
             </div>
@@ -136,47 +191,12 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-gradient-to-r from-fuchsia-600 to-indigo-600 hover:from-fuchsia-500 hover:to-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fuchsia-500 focus:ring-offset-slate-900 transition-all transform hover:-translate-y-0.5 shadow-[0_0_20px_rgba(192,38,211,0.3)] disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full flex justify-center py-3.5 px-4 text-sm font-bold rounded-full text-black bg-white hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fuchsia-500 focus:ring-offset-slate-900 transition-all disabled:opacity-70 disabled:cursor-not-allowed transform hover:-translate-y-0.5 shadow-lg"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? 'Signing in...' : 'Continue'}
             </button>
           </div>
         </form>
-
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-slate-900/80 text-slate-400 backdrop-blur-sm rounded-md">Or continue with</span>
-            </div>
-          </div>
-
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <button 
-              onClick={() => handleSSO('google')}
-              className="w-full flex items-center justify-center px-4 py-2 border border-white/10 rounded-xl shadow-sm bg-slate-950/50 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
-            >
-              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-              </svg>
-              Google
-            </button>
-            <button 
-              onClick={() => handleSSO('facebook')}
-              className="w-full flex items-center justify-center px-4 py-2 border border-white/10 rounded-xl shadow-sm bg-slate-950/50 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
-            >
-              <svg className="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" />
-              </svg>
-              Facebook
-            </button>
-          </div>
-        </div>
 
         <p className="mt-8 text-center text-sm text-slate-400">
           Don't have an account?{' '}
