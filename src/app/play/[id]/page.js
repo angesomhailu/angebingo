@@ -38,13 +38,13 @@ export default function GameRoom({ params }) {
   const roomId = unwrappedParams?.id || '1';
 
   const roomsData = {
-    '1': { name: "Beginner's Luck", entryFee: 10, basePrize: 500, initialPlayers: 34, maxPlayers: 50 },
-    '2': { name: "Midnight Madness", entryFee: 50, basePrize: 3000, initialPlayers: 48, maxPlayers: 50 },
-    '3': { name: "High Roller VIP", entryFee: 500, basePrize: 50000, initialPlayers: 12, maxPlayers: 25 },
-    '4': { name: "Speed Daub", entryFee: 25, basePrize: 1000, initialPlayers: 22, maxPlayers: 100 }
+    '1': { name: "Beginner's Luck", entryFee: 10, basePrize: 500, initialPlayers: 34, maxPlayers: 50, pattern: '1 Line' },
+    '2': { name: "Midnight Madness", entryFee: 50, basePrize: 3000, initialPlayers: 48, maxPlayers: 50, pattern: '2 Lines' },
+    '3': { name: "High Roller VIP", entryFee: 500, basePrize: 50000, initialPlayers: 12, maxPlayers: 25, pattern: 'Full House' },
+    '4': { name: "Speed Daub", entryFee: 25, basePrize: 1000, initialPlayers: 22, maxPlayers: 100, pattern: '3 Lines' }
   };
 
-  const room = roomsData[roomId] || { name: `Room #${roomId}`, entryFee: 50, basePrize: 1000, initialPlayers: 10, maxPlayers: 50 };
+  const room = roomsData[roomId] || { name: `Room #${roomId}`, entryFee: 50, basePrize: 1000, initialPlayers: 10, maxPlayers: 50, pattern: '1 Line' };
 
   const [cartelas, setCartelas] = useState([]);
   const [daubedNumbers, setDaubedNumbers] = useState(new Set());
@@ -157,8 +157,9 @@ export default function GameRoom({ params }) {
     return () => clearInterval(interval);
   }, [gameStarted]);
 
-  const checkWin = (cartela) => {
+  const getCompletedLinesCount = (cartela) => {
     const card = cartela.card;
+    let completedCount = 0;
     
     // Check rows
     for (let r = 0; r < 5; r++) {
@@ -170,7 +171,7 @@ export default function GameRoom({ params }) {
           break;
         }
       }
-      if (rowWin) return true;
+      if (rowWin) completedCount++;
     }
 
     // Check columns
@@ -183,10 +184,10 @@ export default function GameRoom({ params }) {
           break;
         }
       }
-      if (colWin) return true;
+      if (colWin) completedCount++;
     }
 
-    // Check Diagonal 1 (top-left to bottom-right)
+    // Check Diagonal 1
     let diag1Win = true;
     for (let i = 0; i < 5; i++) {
       const num = card[i].numbers[i];
@@ -195,9 +196,9 @@ export default function GameRoom({ params }) {
         break;
       }
     }
-    if (diag1Win) return true;
+    if (diag1Win) completedCount++;
 
-    // Check Diagonal 2 (bottom-left to top-right)
+    // Check Diagonal 2
     let diag2Win = true;
     for (let i = 0; i < 5; i++) {
       const num = card[i].numbers[4 - i];
@@ -206,9 +207,36 @@ export default function GameRoom({ params }) {
         break;
       }
     }
-    if (diag2Win) return true;
+    if (diag2Win) completedCount++;
 
-    return false;
+    return completedCount;
+  };
+
+  const isFullHouse = (cartela) => {
+    const card = cartela.card;
+    for (let c = 0; c < 5; c++) {
+      for (let r = 0; r < 5; r++) {
+        const num = card[c].numbers[r];
+        if (num !== 'FREE' && !daubedNumbers.has(num)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  const checkWin = (cartela) => {
+    const pattern = room.pattern || '1 Line';
+    if (pattern === 'Full House') {
+      return isFullHouse(cartela);
+    }
+    
+    const lines = getCompletedLinesCount(cartela);
+    if (pattern === '1 Line') return lines >= 1;
+    if (pattern === '2 Lines') return lines >= 2;
+    if (pattern === '3 Lines') return lines >= 3;
+    
+    return lines >= 1;
   };
 
   const handleBingoClaim = async () => {
@@ -299,6 +327,11 @@ export default function GameRoom({ params }) {
               <div className="flex items-center gap-1.5 bg-slate-950/40 px-3 py-1.5 rounded-lg border border-white/5">
                 <span>Entry Fee:</span>
                 <span className="text-cyan-400 font-bold font-mono">ꓭ {room.entryFee}</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-slate-950/40 px-3 py-1.5 rounded-lg border border-white/5">
+                <span className="text-fuchsia-400">🎯</span>
+                <span>Win Condition:</span>
+                <span className="text-fuchsia-400 font-bold font-mono">{room.pattern || '1 Line'}</span>
               </div>
             </div>
           </div>
