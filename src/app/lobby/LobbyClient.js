@@ -21,15 +21,27 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
   const [accountNumber, setAccountNumber] = useState('');
   const [depositStatus, setDepositStatus] = useState('idle'); // 'idle' | 'processing' | 'success'
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   useEffect(() => {
     setIsClient(true);
+    if (initialUser && initialUser.username) {
+      localStorage.setItem('bingo_username', initialUser.username);
+    }
     const savedCoins = localStorage.getItem('bingo_coins');
     if (savedCoins !== null) {
       setCoins(Number(savedCoins));
     } else {
       setCoins(initialUser.coins || 0);
     }
-  }, [initialUser.coins]);
+  }, [initialUser.coins, initialUser.username]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    router.refresh();
+    await new Promise(resolve => setTimeout(resolve, 800));
+    setIsRefreshing(false);
+  };
 
   const updateCoins = (amount) => {
     const newCoins = amount;
@@ -162,7 +174,23 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
                 <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
                 Active Rooms
               </h3>
-              <button className="text-sm text-fuchsia-400 hover:text-fuchsia-300 font-medium">Refresh</button>
+              <button 
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="text-sm text-fuchsia-400 hover:text-fuchsia-300 font-medium flex items-center gap-1.5 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+              >
+                <svg 
+                  className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor" 
+                  strokeWidth="2.5"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                {isRefreshing ? 'Refreshing...' : 'Refresh'}
+              </button>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
@@ -307,32 +335,33 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
 
       {/* CBE Birr, Telebirr, HelloCash Deposit Modal */}
       {showDepositModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm transition-opacity duration-300">
-          <div className="relative w-full max-w-lg bg-slate-900 border border-white/10 rounded-3xl p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            
-            {depositStatus === 'idle' && (
-              <>
-                {/* Background Decor */}
-                <div className="absolute -top-12 -right-12 w-32 h-32 bg-fuchsia-600/20 rounded-full blur-2xl"></div>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm transition-opacity duration-300">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <div className="relative w-full max-w-lg bg-slate-900 border border-white/10 rounded-3xl p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-left align-middle">
+              
+              {depositStatus === 'idle' && (
+                <>
+                  {/* Background Decor */}
+                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-fuchsia-600/20 rounded-full blur-2xl"></div>
 
-                <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
-                  <h3 className="text-2xl font-black text-white flex items-center gap-2">
-                    <span className="text-2xl font-black text-yellow-400">ꓭ</span>
-                    Deposit Balance
-                  </h3>
-                  <button 
-                    onClick={() => setShowDepositModal(false)}
-                    className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-all cursor-pointer"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                </div>
+                  <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+                    <h3 className="text-2xl font-black text-white flex items-center gap-2">
+                      <span className="text-2xl font-black text-yellow-400">ꓭ</span>
+                      Deposit Balance
+                    </h3>
+                    <button 
+                      onClick={() => setShowDepositModal(false)}
+                      className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-all cursor-pointer"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
 
-                <form onSubmit={handleDepositSubmit} className="space-y-6">
-                  {/* Payment Methods */}
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Select Payment Method</label>
-                    <div className="grid grid-cols-2 gap-3.5">
+                  <form onSubmit={handleDepositSubmit} className="space-y-6">
+                    {/* Payment Methods */}
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Select Payment Method</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       
                       {/* Telebirr */}
                       <button
@@ -520,6 +549,7 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
               </div>
             )}
 
+            </div>
           </div>
         </div>
       )}
