@@ -32,19 +32,32 @@ export async function getDbConnection() {
           max_players INT NOT NULL,
           color VARCHAR(255) NOT NULL,
           glow VARCHAR(255) NOT NULL,
-          hot TINYINT DEFAULT 0
+          hot TINYINT DEFAULT 0,
+          pattern VARCHAR(255) NOT NULL DEFAULT '1 Line'
         );
       `);
+
+      // Migration: Add pattern column if it doesn't exist (MySQL/MariaDB fallback check)
+      try {
+        await pool.query("ALTER TABLE rooms ADD COLUMN pattern VARCHAR(255) NOT NULL DEFAULT '1 Line'");
+        // Update default values for seeded rows
+        await pool.query("UPDATE rooms SET pattern = '1 Line' WHERE id = 1");
+        await pool.query("UPDATE rooms SET pattern = '2 Lines' WHERE id = 2");
+        await pool.query("UPDATE rooms SET pattern = 'Full House' WHERE id = 3");
+        await pool.query("UPDATE rooms SET pattern = '3 Lines' WHERE id = 4");
+      } catch (err) {
+        // Ignored if column already exists
+      }
 
       // Seed default rooms if table is empty
       const [roomCountRows] = await pool.query('SELECT COUNT(*) as count FROM rooms');
       if (roomCountRows[0].count === 0) {
         await pool.query(`
-          INSERT INTO rooms (id, name, entry_fee, prize, max_players, color, glow, hot) VALUES
-          (1, "Beginner's Luck", 10, 500, 50, "from-emerald-500 to-teal-600", "shadow-[0_0_20px_rgba(16,185,129,0.3)]", 0),
-          (2, "Midnight Madness", 50, 3000, 50, "from-fuchsia-500 to-purple-600", "shadow-[0_0_20px_rgba(192,38,211,0.3)]", 1),
-          (3, "High Roller VIP", 500, 50000, 25, "from-yellow-400 to-amber-600", "shadow-[0_0_20px_rgba(250,204,21,0.3)]", 0),
-          (4, "Speed Daub", 25, 1000, 100, "from-cyan-400 to-blue-600", "shadow-[0_0_20px_rgba(34,211,238,0.3)]", 0)
+          INSERT INTO rooms (id, name, entry_fee, prize, max_players, color, glow, hot, pattern) VALUES
+          (1, "Beginner's Luck", 10, 500, 50, "from-emerald-500 to-teal-600", "shadow-[0_0_20px_rgba(16,185,129,0.3)]", 0, "1 Line"),
+          (2, "Midnight Madness", 50, 3000, 50, "from-fuchsia-500 to-purple-600", "shadow-[0_0_20px_rgba(192,38,211,0.3)]", 1, "2 Lines"),
+          (3, "High Roller VIP", 500, 50000, 25, "from-yellow-400 to-amber-600", "shadow-[0_0_20px_rgba(250,204,21,0.3)]", 0, "Full House"),
+          (4, "Speed Daub", 25, 1000, 100, "from-cyan-400 to-blue-600", "shadow-[0_0_20px_rgba(34,211,238,0.3)]", 0, "3 Lines")
         `);
       }
     } catch (err) {

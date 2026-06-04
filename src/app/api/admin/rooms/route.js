@@ -23,7 +23,7 @@ export async function PUT(req) {
 
     // 2. Parse request payload
     const body = await req.json();
-    const { id, name, entry_fee, prize, max_players, hot } = body;
+    const { id, name, entry_fee, prize, max_players, hot, pattern } = body;
 
     if (!id || !name || entry_fee === undefined || prize === undefined) {
       return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
@@ -32,8 +32,8 @@ export async function PUT(req) {
     // 3. Update configuration inside MySQL
     const pool = await getDbConnection();
     await pool.query(
-      'UPDATE rooms SET name = ?, entry_fee = ?, prize = ?, max_players = ?, hot = ? WHERE id = ?',
-      [name, Number(entry_fee), Number(prize), Number(max_players || 50), hot ? 1 : 0, Number(id)]
+      'UPDATE rooms SET name = ?, entry_fee = ?, prize = ?, max_players = ?, hot = ?, pattern = ? WHERE id = ?',
+      [name, Number(entry_fee), Number(prize), Number(max_players || 50), hot ? 1 : 0, pattern || '1 Line', Number(id)]
     );
 
     return NextResponse.json({ success: true, message: "Room configuration updated successfully!" });
