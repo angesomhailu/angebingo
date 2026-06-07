@@ -87,6 +87,29 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
 
   const handleJoinRoom = async (e, room) => {
     e.preventDefault();
+
+    // Check if there is an active, unfinished game in this room to allow free re-entry
+    let isGameUnfinished = false;
+    if (typeof window !== 'undefined') {
+      const savedStateStr = localStorage.getItem(`bingo_room_state_${room.id}`);
+      if (savedStateStr) {
+        try {
+          const savedState = JSON.parse(savedStateStr);
+          if (savedState && !savedState.isFinished) {
+            isGameUnfinished = true;
+          }
+        } catch (err) {
+          console.error("Failed to parse saved game state:", err);
+        }
+      }
+    }
+
+    if (isGameUnfinished) {
+      // Re-enter room without charging again
+      router.push(`/play/${room.id}`);
+      return;
+    }
+
     if (coins < room.entryFee) {
       setSelectedRoom(room);
       setShowInsufficientModal(true);
@@ -205,7 +228,12 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
                     </div>
                   )}
 
-                  <h4 className="text-xl font-bold mb-4 w-3/4">{room.name}</h4>
+                  <div className="flex items-center justify-between gap-2 mb-4">
+                    <h4 className="text-xl font-bold line-clamp-1">{room.name}</h4>
+                    <span className="text-[10px] font-bold text-fuchsia-400 bg-fuchsia-500/10 border border-fuchsia-500/20 px-2 py-0.5 rounded-md whitespace-nowrap">
+                      {room.pattern || '1 Line'}
+                    </span>
+                  </div>
                   
                   <div className="flex items-center gap-6 mb-6">
                     <div>

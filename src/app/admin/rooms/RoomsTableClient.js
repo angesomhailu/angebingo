@@ -8,8 +8,43 @@ export default function RoomsTableClient({ initialRooms }) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  const [globalPattern, setGlobalPattern] = useState('1 Line');
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+
   const handleEditClick = (room) => {
     setEditingRoom({ ...room });
+  };
+
+  const handleBulkUpdate = async () => {
+    if (!confirm(`Are you sure you want to change the game type of all rooms to "${globalPattern}"?`)) {
+      return;
+    }
+    
+    setIsBulkUpdating(true);
+    try {
+      const res = await fetch('/api/admin/rooms', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bulk: true,
+          pattern: globalPattern
+        })
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        // Update local state rooms
+        setRooms(prev => prev.map(r => ({ ...r, pattern: globalPattern })));
+        alert(`Successfully set all rooms to "${globalPattern}"!`);
+      } else {
+        alert(data.error || "Failed to update rooms.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Network error. Please try again.");
+    } finally {
+      setIsBulkUpdating(false);
+    }
   };
 
   const handleSave = async (e) => {
@@ -27,7 +62,8 @@ export default function RoomsTableClient({ initialRooms }) {
           entry_fee: editingRoom.entryFee,
           prize: editingRoom.prize,
           max_players: editingRoom.maxPlayers,
-          hot: editingRoom.hot
+          hot: editingRoom.hot,
+          pattern: editingRoom.pattern || '1 Line'
         })
       });
 
@@ -57,6 +93,56 @@ export default function RoomsTableClient({ initialRooms }) {
         <div>
           <h1 className="text-3xl font-black text-white mb-1">Game Rooms Management</h1>
           <p className="text-slate-400">Configure entry fees, prize caps, and active statuses for your bingo lobbies.</p>
+        </div>
+      </div>
+
+      {/* Global Room Configuration Card */}
+      <div className="bg-gradient-to-r from-fuchsia-900/30 to-indigo-900/30 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-2xl mb-8">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+          <div className="max-w-xl">
+            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+              <span className="text-xl">🎯</span> Global Game Room Config
+            </h2>
+            <p className="text-sm text-slate-300">
+              Assign the active game pattern/win condition to <strong>all rooms at once</strong>. This will instantly change the rules for all active bingo matches across the platform.
+            </p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+            <select
+              value={globalPattern}
+              onChange={(e) => setGlobalPattern(e.target.value)}
+              className="bg-slate-950 border border-white/10 rounded-2xl px-4 py-3 text-white font-bold focus:outline-none focus:border-fuchsia-500 transition-colors shadow-inner cursor-pointer min-w-[220px]"
+            >
+              <option value="1 Line">1 Line (Horizontal, Vertical, Diagonal)</option>
+              <option value="2 Lines">2 Lines</option>
+              <option value="3 Lines">3 Lines</option>
+              <option value="4 Lines">4 Lines</option>
+              <option value="Full House">Full House (Blackout)</option>
+              <option value="Half House">Half House (12+ Marked Numbers)</option>
+              <option value="Four Corners">Four Corners</option>
+              <option value="Outer Edge">Outer Edge (Border)</option>
+              <option value="Letter X">Letter X (Diagonals)</option>
+              <option value="Letter T">Letter T</option>
+              <option value="Letter L">Letter L</option>
+              <option value="Center Cross">Center Cross (+)</option>
+            </select>
+            
+            <button
+              onClick={handleBulkUpdate}
+              disabled={isBulkUpdating}
+              className="py-3 px-6 bg-gradient-to-r from-fuchsia-600 to-indigo-600 hover:from-fuchsia-500 hover:to-indigo-500 disabled:opacity-50 text-white font-bold rounded-2xl transition-all shadow-[0_4px_20px_rgba(192,38,211,0.4)] active:scale-98 cursor-pointer text-center text-sm flex items-center justify-center gap-2 whitespace-nowrap"
+            >
+              {isBulkUpdating ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
+                  Updating...
+                </>
+              ) : (
+                'Apply to All Rooms'
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -94,6 +180,10 @@ export default function RoomsTableClient({ initialRooms }) {
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-400">Max Players</span>
                 <span className="text-cyan-400 font-bold font-mono">{room.maxPlayers}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-400">Game Type</span>
+                <span className="text-emerald-400 font-bold">{room.pattern || '1 Line'}</span>
               </div>
             </div>
 
@@ -158,6 +248,28 @@ export default function RoomsTableClient({ initialRooms }) {
                         className="w-full bg-slate-950 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-fuchsia-500 font-bold transition-colors shadow-inner"
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Game Type / Pattern</label>
+                    <select
+                      value={editingRoom.pattern || '1 Line'}
+                      onChange={(e) => setEditingRoom({ ...editingRoom, pattern: e.target.value })}
+                      className="w-full bg-slate-950 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-500 font-bold transition-colors shadow-inner cursor-pointer"
+                    >
+                      <option value="1 Line">1 Line (Horizontal, Vertical, Diagonal)</option>
+                      <option value="2 Lines">2 Lines</option>
+                      <option value="3 Lines">3 Lines</option>
+                      <option value="4 Lines">4 Lines</option>
+                      <option value="Full House">Full House (Blackout)</option>
+                      <option value="Half House">Half House (12+ Marked Numbers)</option>
+                      <option value="Four Corners">Four Corners</option>
+                      <option value="Outer Edge">Outer Edge (Border)</option>
+                      <option value="Letter X">Letter X (Diagonals)</option>
+                      <option value="Letter T">Letter T</option>
+                      <option value="Letter L">Letter L</option>
+                      <option value="Center Cross">Center Cross (+)</option>
+                    </select>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 items-center pt-2">

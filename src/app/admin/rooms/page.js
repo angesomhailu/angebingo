@@ -16,7 +16,8 @@ export default async function AdminRoomsPage() {
       maxPlayers: r.max_players,
       color: r.color,
       glow: r.glow,
-      hot: !!r.hot
+      hot: !!r.hot,
+      pattern: r.pattern || '1 Line'
     }));
   } catch (error) {
     console.error("Failed to load rooms inside admin:", error?.message || error);

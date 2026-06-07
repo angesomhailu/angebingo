@@ -37,24 +37,91 @@ export default function GameRoom({ params }) {
   const unwrappedParams = use(params);
   const roomId = unwrappedParams?.id || '1';
 
-  const roomsData = {
-    '1': { name: "Beginner's Luck", entryFee: 10, basePrize: 500, initialPlayers: 34, maxPlayers: 50, pattern: '1 Line' },
-    '2': { name: "Midnight Madness", entryFee: 50, basePrize: 3000, initialPlayers: 48, maxPlayers: 50, pattern: '2 Lines' },
-    '3': { name: "High Roller VIP", entryFee: 500, basePrize: 50000, initialPlayers: 12, maxPlayers: 25, pattern: 'Full House' },
-    '4': { name: "Speed Daub", entryFee: 25, basePrize: 1000, initialPlayers: 22, maxPlayers: 100, pattern: '3 Lines' }
-  };
-
-  const room = roomsData[roomId] || { name: `Room #${roomId}`, entryFee: 50, basePrize: 1000, initialPlayers: 10, maxPlayers: 50, pattern: '1 Line' };
+  const [room, setRoom] = useState({
+    name: `Room #${roomId}`,
+    entryFee: 50,
+    basePrize: 1000,
+    initialPlayers: 30,
+    maxPlayers: 50,
+    pattern: '1 Line'
+  });
 
   const [cartelas, setCartelas] = useState([]);
   const [daubedNumbers, setDaubedNumbers] = useState(new Set());
   const [calledNumbers, setCalledNumbers] = useState([]);
   const [currentCall, setCurrentCall] = useState(null);
   const [playersCount, setPlayersCount] = useState(room.initialPlayers);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [startCountdown, setStartCountdown] = useState(5);
+  const [timeLeft, setTimeLeft] = useState(5);
+  const [showWinModal, setShowWinModal] = useState(false);
+  const [winPrize, setWinPrize] = useState(0);
+  const [falseBingoMessage, setFalseBingoMessage] = useState('');
+  const [username, setUsername] = useState('PlayerOne');
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load live room configuration from API
+  useEffect(() => {
+    async function loadRoomConfig() {
+      try {
+        const res = await fetch(`/api/rooms/${roomId}`);
+        const data = await res.json();
+        if (data && !data.error) {
+          const mappedRoom = {
+            name: data.name,
+            entryFee: data.entryFee,
+            basePrize: data.prize,
+            initialPlayers: data.id === 1 ? 34 : data.id === 2 ? 48 : data.id === 3 ? 12 : data.id === 4 ? 22 : Math.floor(data.maxPlayers * 0.6),
+            maxPlayers: data.maxPlayers,
+            pattern: data.pattern
+          };
+          setRoom(mappedRoom);
+          
+          // Only set players count to initial if there is no unfinished saved game state
+          const savedStateStr = localStorage.getItem(`bingo_room_state_${roomId}`);
+          let hasSavedUnfinished = false;
+          if (savedStateStr) {
+            try {
+              const savedState = JSON.parse(savedStateStr);
+              if (savedState && !savedState.isFinished) {
+                hasSavedUnfinished = true;
+              }
+            } catch (e) {}
+          }
+          if (!hasSavedUnfinished) {
+            setPlayersCount(mappedRoom.initialPlayers);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load room config:", err);
+      }
+    }
+    loadRoomConfig();
+  }, [roomId]);
+
+  // Load username
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('bingo_username');
+      if (storedUser) setUsername(storedUser);
+    }
+  }, []);
 
   // Sync playersCount when room changes
   useEffect(() => {
-    setPlayersCount(room.initialPlayers);
+    const savedStateStr = localStorage.getItem(`bingo_room_state_${roomId}`);
+    let hasSavedUnfinished = false;
+    if (savedStateStr) {
+      try {
+        const savedState = JSON.parse(savedStateStr);
+        if (savedState && !savedState.isFinished) {
+          hasSavedUnfinished = true;
+        }
+      } catch (e) {}
+    }
+    if (!hasSavedUnfinished) {
+      setPlayersCount(room.initialPlayers);
+    }
   }, [roomId, room.initialPlayers]);
 
   // Simulate other players joining the room over time
@@ -72,11 +139,82 @@ export default function GameRoom({ params }) {
     return () => clearInterval(interval);
   }, [room.maxPlayers, room.initialPlayers]);
 
-  // Initialize with 1 cartela
+  // Load state from localStorage on mount
   useEffect(() => {
-    setCartelas([{ id: Date.now(), card: generateCartela() }]);
-    setDaubedNumbers(new Set(['FREE']));
-  }, []);
+    if (typeof window !== 'undefined') {
+      const savedStateStr = localStorage.getItem(`bingo_room_state_${roomId}`);
+      let loaded = false;
+      if (savedStateStr) {
+        try {
+          const savedState = JSON.parse(savedStateStr);
+          if (savedState && !savedState.isFinished) {
+            setCartelas(savedState.cartelas || []);
+            setDaubedNumbers(new Set(savedState.daubedNumbers || ['FREE']));
+            setCalledNumbers(savedState.calledNumbers || []);
+            setCurrentCall(savedState.currentCall || null);
+            setPlayersCount(savedState.playersCount !== undefined ? savedState.playersCount : room.initialPlayers);
+            setGameStarted(savedState.gameStarted || false);
+            setStartCountdown(savedState.startCountdown !== undefined ? savedState.startCountdown : 5);
+            setTimeLeft(savedState.timeLeft !== undefined ? savedState.timeLeft : 5);
+            setShowWinModal(savedState.showWinModal || false);
+            setWinPrize(savedState.winPrize || 0);
+            loaded = true;
+          }
+        } catch (err) {
+          console.error("Failed to parse saved room state on mount:", err);
+        }
+      }
+      
+      if (!loaded) {
+        setCartelas([{ id: Date.now(), card: generateCartela() }]);
+        setDaubedNumbers(new Set(['FREE']));
+        setCalledNumbers([]);
+        setCurrentCall(null);
+        setPlayersCount(room.initialPlayers);
+        setGameStarted(false);
+        setStartCountdown(5);
+        setTimeLeft(5);
+        setShowWinModal(false);
+        setWinPrize(0);
+      }
+      setIsLoaded(true);
+    }
+  }, [roomId, room.initialPlayers]);
+
+  // Save state to localStorage on changes
+  useEffect(() => {
+    if (!isLoaded || typeof window === 'undefined') return;
+
+    const stateToSave = {
+      roomId,
+      cartelas,
+      daubedNumbers: Array.from(daubedNumbers),
+      calledNumbers,
+      currentCall,
+      playersCount,
+      gameStarted,
+      startCountdown,
+      timeLeft,
+      showWinModal,
+      winPrize,
+      isFinished: showWinModal
+    };
+
+    localStorage.setItem(`bingo_room_state_${roomId}`, JSON.stringify(stateToSave));
+  }, [
+    isLoaded,
+    roomId,
+    cartelas,
+    daubedNumbers,
+    calledNumbers,
+    currentCall,
+    playersCount,
+    gameStarted,
+    startCountdown,
+    timeLeft,
+    showWinModal,
+    winPrize
+  ]);
 
   const addCartela = () => {
     if (cartelas.length < 4) {
@@ -87,21 +225,6 @@ export default function GameRoom({ params }) {
   const removeCartela = (cartelaId) => {
     setCartelas(cartelas.filter(c => c.id !== cartelaId));
   };
-
-  const [gameStarted, setGameStarted] = useState(false);
-  const [startCountdown, setStartCountdown] = useState(5);
-  const [timeLeft, setTimeLeft] = useState(5);
-  const [showWinModal, setShowWinModal] = useState(false);
-  const [winPrize, setWinPrize] = useState(0);
-  const [falseBingoMessage, setFalseBingoMessage] = useState('');
-  const [username, setUsername] = useState('PlayerOne');
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem('bingo_username');
-      if (storedUser) setUsername(storedUser);
-    }
-  }, []);
 
   const toggleDaub = (number) => {
     if (number === 'FREE') return;
@@ -212,31 +335,130 @@ export default function GameRoom({ params }) {
     return completedCount;
   };
 
+  const isCellDaubed = (card, col, row) => {
+    const num = card[col].numbers[row];
+    return num === 'FREE' || daubedNumbers.has(num);
+  };
+
   const isFullHouse = (cartela) => {
     const card = cartela.card;
     for (let c = 0; c < 5; c++) {
       for (let r = 0; r < 5; r++) {
-        const num = card[c].numbers[r];
-        if (num !== 'FREE' && !daubedNumbers.has(num)) {
-          return false;
-        }
+        if (!isCellDaubed(card, c, r)) return false;
       }
+    }
+    return true;
+  };
+
+  const checkHalfHouse = (cartela) => {
+    const card = cartela.card;
+    let count = 0;
+    for (let c = 0; c < 5; c++) {
+      for (let r = 0; r < 5; r++) {
+        if (c === 2 && r === 2) continue; // skip center FREE space
+        const num = card[c].numbers[r];
+        if (daubedNumbers.has(num)) count++;
+      }
+    }
+    return count >= 12; // 12 or more numbers daubed
+  };
+
+  const checkFourCorners = (cartela) => {
+    const card = cartela.card;
+    return isCellDaubed(card, 0, 0) && isCellDaubed(card, 0, 4) && isCellDaubed(card, 4, 0) && isCellDaubed(card, 4, 4);
+  };
+
+  const checkOuterEdge = (cartela) => {
+    const card = cartela.card;
+    for (let c = 0; c < 5; c++) {
+      if (!isCellDaubed(card, c, 0)) return false; // top row
+      if (!isCellDaubed(card, c, 4)) return false; // bottom row
+    }
+    for (let r = 0; r < 5; r++) {
+      if (!isCellDaubed(card, 0, r)) return false; // left col
+      if (!isCellDaubed(card, 4, r)) return false; // right col
+    }
+    return true;
+  };
+
+  const checkLetterX = (cartela) => {
+    const card = cartela.card;
+    for (let i = 0; i < 5; i++) {
+      if (!isCellDaubed(card, i, i)) return false;
+      if (!isCellDaubed(card, i, 4 - i)) return false;
+    }
+    return true;
+  };
+
+  const checkLetterT = (cartela) => {
+    const card = cartela.card;
+    // top row
+    for (let c = 0; c < 5; c++) {
+      if (!isCellDaubed(card, c, 0)) return false;
+    }
+    // middle column
+    for (let r = 0; r < 5; r++) {
+      if (!isCellDaubed(card, 2, r)) return false;
+    }
+    return true;
+  };
+
+  const checkLetterL = (cartela) => {
+    const card = cartela.card;
+    // leftmost column
+    for (let r = 0; r < 5; r++) {
+      if (!isCellDaubed(card, 0, r)) return false;
+    }
+    // bottom row
+    for (let c = 0; c < 5; c++) {
+      if (!isCellDaubed(card, c, 4)) return false;
+    }
+    return true;
+  };
+
+  const checkCenterCross = (cartela) => {
+    const card = cartela.card;
+    // middle row
+    for (let c = 0; c < 5; c++) {
+      if (!isCellDaubed(card, c, 2)) return false;
+    }
+    // middle column
+    for (let r = 0; r < 5; r++) {
+      if (!isCellDaubed(card, 2, r)) return false;
     }
     return true;
   };
 
   const checkWin = (cartela) => {
     const pattern = room.pattern || '1 Line';
-    if (pattern === 'Full House') {
-      return isFullHouse(cartela);
+    switch (pattern) {
+      case 'Full House':
+        return isFullHouse(cartela);
+      case 'Half House':
+        return checkHalfHouse(cartela);
+      case 'Four Corners':
+        return checkFourCorners(cartela);
+      case 'Outer Edge':
+        return checkOuterEdge(cartela);
+      case 'Letter X':
+        return checkLetterX(cartela);
+      case 'Letter T':
+        return checkLetterT(cartela);
+      case 'Letter L':
+        return checkLetterL(cartela);
+      case 'Center Cross':
+        return checkCenterCross(cartela);
+      case '1 Line':
+        return getCompletedLinesCount(cartela) >= 1;
+      case '2 Lines':
+        return getCompletedLinesCount(cartela) >= 2;
+      case '3 Lines':
+        return getCompletedLinesCount(cartela) >= 3;
+      case '4 Lines':
+        return getCompletedLinesCount(cartela) >= 4;
+      default:
+        return getCompletedLinesCount(cartela) >= 1;
     }
-    
-    const lines = getCompletedLinesCount(cartela);
-    if (pattern === '1 Line') return lines >= 1;
-    if (pattern === '2 Lines') return lines >= 2;
-    if (pattern === '3 Lines') return lines >= 3;
-    
-    return lines >= 1;
   };
 
   const handleBingoClaim = async () => {

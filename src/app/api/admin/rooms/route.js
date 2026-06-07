@@ -23,14 +23,24 @@ export async function PUT(req) {
 
     // 2. Parse request payload
     const body = await req.json();
-    const { id, name, entry_fee, prize, max_players, hot, pattern } = body;
+    const { id, name, entry_fee, prize, max_players, hot, pattern, bulk } = body;
+
+    const pool = await getDbConnection();
+
+    // 2.1 Check for bulk updates
+    if (bulk) {
+      if (!pattern) {
+        return NextResponse.json({ error: "Missing pattern parameter for bulk update" }, { status: 400 });
+      }
+      await pool.query('UPDATE rooms SET pattern = ?', [pattern]);
+      return NextResponse.json({ success: true, message: `All rooms updated to pattern: ${pattern}` });
+    }
 
     if (!id || !name || entry_fee === undefined || prize === undefined) {
       return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
     }
 
     // 3. Update configuration inside MySQL
-    const pool = await getDbConnection();
     await pool.query(
       'UPDATE rooms SET name = ?, entry_fee = ?, prize = ?, max_players = ?, hot = ?, pattern = ? WHERE id = ?',
       [name, Number(entry_fee), Number(prize), Number(max_players || 50), hot ? 1 : 0, pattern || '1 Line', Number(id)]

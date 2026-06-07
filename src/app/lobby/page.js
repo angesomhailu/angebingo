@@ -57,7 +57,8 @@ export default async function LobbyPage() {
         players: mockPlayers,
         color: r.color,
         glow: r.glow,
-        hot: !!r.hot
+        hot: !!r.hot,
+        pattern: r.pattern || '1 Line'
       };
     });
   } catch (error) {
