@@ -7,7 +7,7 @@ import LogoutButton from '../components/LogoutButton';
 
 export default function LobbyClient({ initialUser, initialTopPlayers, initialRooms }) {
   const router = useRouter();
-  
+
   // Persist coins in localStorage to feel like a real account
   const [coins, setCoins] = useState(0);
   const [isClient, setIsClient] = useState(false);
@@ -32,7 +32,7 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
       const mockPay = urlParams.get('telebirr_mock_pay');
       const outTradeNo = urlParams.get('outTradeNo');
       const amount = urlParams.get('amount');
-      
+
       if (mockPay === 'true' && outTradeNo && amount) {
         setMockPaymentParams({ outTradeNo, amount: Number(amount) });
       }
@@ -220,7 +220,7 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-fuchsia-600/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-1 flex flex-col">
-        
+
         {/* Top Dashboard Bar */}
         <div className="bg-slate-900/60 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-2xl mb-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-5">
@@ -239,7 +239,7 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4 bg-slate-950/50 p-4 rounded-2xl border border-white/5 shadow-inner">
             <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400">
               <span className="text-2xl font-black">ꓭ</span>
@@ -251,7 +251,7 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
                 {isClient ? coins.toLocaleString() : '0'}
               </div>
             </div>
-            <button 
+            <button
               onClick={() => setShowDepositModal(true)}
               className="ml-4 px-4 py-2 rounded-xl bg-gradient-to-tr from-fuchsia-600 to-indigo-600 hover:from-fuchsia-500 hover:to-indigo-500 transition-all text-sm font-bold text-white shadow-lg active:scale-95 cursor-pointer"
             >
@@ -268,17 +268,17 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
                 <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
                 Active Rooms
               </h3>
-              <button 
+              <button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
                 className="text-sm text-fuchsia-400 hover:text-fuchsia-300 font-medium flex items-center gap-1.5 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
               >
-                <svg 
-                  className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  stroke="currentColor" 
+                <svg
+                  className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                   strokeWidth="2.5"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -291,21 +291,18 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
               {activeRooms.map((room) => (
                 <div key={room.id} className={`relative p-6 rounded-3xl bg-slate-900/40 border border-white/10 hover:border-white/20 transition-all hover:-translate-y-1 overflow-hidden group ${room.glow}`}>
                   <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${room.color} opacity-20 rounded-bl-full pointer-events-none group-hover:opacity-30 transition-opacity`}></div>
-                  
+
                   {room.hot && (
-                    <div className="absolute top-4 right-4 px-2 py-1 rounded-md bg-red-500/20 text-red-400 text-xs font-bold flex items-center gap-1 border border-red-500/20">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M15.36 11.22c.62-1.39.8-2.92.51-4.4-.11-.56-.69-.87-1.19-.62-2.9 1.48-4.7 4.14-5.32 7.07-.12.57.44 1.05.99.88 1.95-.6 3.65-2 4.67-3.81.1-.19.24-.32.34-.12zm-3.8-9.05c-3.1 1.77-5.18 4.79-5.91 8.35-.38 1.83-.24 3.7.4 5.44.2.53.84.7 1.28.34 2.87-2.3 4.2-5.71 3.59-9.14-.1-.53-.66-.8-1.13-.57-.59.29-1.13.67-1.59 1.12-.2.2-.56.1-.56-.18 0-1.8.84-3.48 2.22-4.57.4-.31.25-.94-.3-1.04z"></path></svg>
-                      HOT
-                    </div>
+                    <div ></div>
                   )}
 
                   <div className="flex items-center justify-between gap-2 mb-4">
                     <h4 className="text-xl font-bold line-clamp-1">{room.name}</h4>
-                    <span className="text-[10px] font-bold text-fuchsia-400 bg-fuchsia-500/10 border border-fuchsia-500/20 px-2 py-0.5 rounded-md whitespace-nowrap">
+                    <span className="text-[15px] font-bold text-white-500 bg-black-500 border border-red-500 px-2 py-0.5 rounded-br-2xl rounded-tl-2xl whitespace-nowrap">
                       {room.pattern || '1 Line'}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center gap-6 mb-6">
                     <div>
                       <div className="text-xs text-slate-400 mb-1">Entry Fee</div>
@@ -329,8 +326,8 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
                     <div className={`h-full bg-gradient-to-r ${room.color}`} style={{ width: `${(room.players / room.maxPlayers) * 100}%` }}></div>
                   </div>
 
-                  <button 
-                    onClick={(e) => handleJoinRoom(e, room)} 
+                  <button
+                    onClick={(e) => handleJoinRoom(e, room)}
                     className={`block w-full py-3 rounded-xl bg-gradient-to-r ${room.color} text-white font-bold text-center hover:opacity-90 transition-opacity active:scale-[0.98] cursor-pointer`}
                   >
                     Join Game
@@ -393,7 +390,7 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
 
             {/* Error Icon */}
             <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center mb-5 mx-auto">
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
             </div>
 
             <h3 className="text-2xl font-black text-white text-center mb-2">Insufficient Balance</h3>
@@ -403,7 +400,7 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
             </p>
 
             <div className="flex flex-col gap-3">
-              <button 
+              <button
                 onClick={() => {
                   setShowInsufficientModal(false);
                   setShowDepositModal(true);
@@ -412,7 +409,7 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
               >
                 Go to Deposit
               </button>
-              <button 
+              <button
                 onClick={() => {
                   setShowInsufficientModal(false);
                   router.push('/');
@@ -421,7 +418,7 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
               >
                 Go to Home Page
               </button>
-              <button 
+              <button
                 onClick={() => setShowInsufficientModal(false)}
                 className="w-full py-2 text-xs text-slate-500 hover:text-slate-400 transition-colors cursor-pointer text-center"
               >
@@ -437,7 +434,7 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
         <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm transition-opacity duration-300">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <div className="relative w-full max-w-lg bg-slate-900 border border-white/10 rounded-3xl p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-left align-middle">
-              
+
               {depositStatus === 'idle' && (
                 <>
                   {/* Background Decor */}
@@ -448,11 +445,11 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
                       <span className="text-2xl font-black text-yellow-400">ꓭ</span>
                       Deposit Balance
                     </h3>
-                    <button 
+                    <button
                       onClick={() => setShowDepositModal(false)}
                       className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-all cursor-pointer"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                     </button>
                   </div>
 
@@ -461,192 +458,183 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
                     <div>
                       <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Select Payment Method</label>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      
-                      {/* Telebirr */}
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod('telebirr')}
-                        className={`p-4 rounded-2xl border transition-all flex flex-col items-start gap-2 text-left cursor-pointer relative overflow-hidden group ${
-                          paymentMethod === 'telebirr'
+
+                        {/* Telebirr */}
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod('telebirr')}
+                          className={`p-4 rounded-2xl border transition-all flex flex-col items-start gap-2 text-left cursor-pointer relative overflow-hidden group ${paymentMethod === 'telebirr'
                             ? 'bg-sky-500/10 border-sky-400 shadow-[0_0_15px_rgba(14,165,233,0.15)]'
                             : 'bg-slate-950/40 border-white/5 hover:border-white/10'
-                        }`}
-                      >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${
-                          paymentMethod === 'telebirr' ? 'bg-sky-500 text-white' : 'bg-slate-800 text-slate-400'
-                        }`}>
-                          T
-                        </div>
-                        <div>
-                          <div className="font-bold text-white text-sm">telebirr</div>
-                          <div className="text-[10px] text-slate-400">Ethio Telecom</div>
-                        </div>
-                        {paymentMethod === 'telebirr' && (
-                          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-sky-400"></div>
-                        )}
-                      </button>
+                            }`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${paymentMethod === 'telebirr' ? 'bg-sky-500 text-white' : 'bg-slate-800 text-slate-400'
+                            }`}>
+                            T
+                          </div>
+                          <div>
+                            <div className="font-bold text-white text-sm">telebirr</div>
+                            <div className="text-[10px] text-slate-400">Ethio Telecom</div>
+                          </div>
+                          {paymentMethod === 'telebirr' && (
+                            <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-sky-400"></div>
+                          )}
+                        </button>
 
-                      {/* CBE Birr */}
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod('cbe_birr')}
-                        className={`p-4 rounded-2xl border transition-all flex flex-col items-start gap-2 text-left cursor-pointer relative overflow-hidden group ${
-                          paymentMethod === 'cbe_birr'
+                        {/* CBE Birr */}
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod('cbe_birr')}
+                          className={`p-4 rounded-2xl border transition-all flex flex-col items-start gap-2 text-left cursor-pointer relative overflow-hidden group ${paymentMethod === 'cbe_birr'
                             ? 'bg-amber-500/10 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.15)]'
                             : 'bg-slate-950/40 border-white/5 hover:border-white/10'
-                        }`}
-                      >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${
-                          paymentMethod === 'cbe_birr' ? 'bg-amber-500 text-white' : 'bg-slate-800 text-slate-400'
-                        }`}>
-                          C
-                        </div>
-                        <div>
-                          <div className="font-bold text-white text-sm">CBE Birr</div>
-                          <div className="text-[10px] text-slate-400">Commercial Bank</div>
-                        </div>
-                        {paymentMethod === 'cbe_birr' && (
-                          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-amber-400"></div>
-                        )}
-                      </button>
+                            }`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${paymentMethod === 'cbe_birr' ? 'bg-amber-500 text-white' : 'bg-slate-800 text-slate-400'
+                            }`}>
+                            C
+                          </div>
+                          <div>
+                            <div className="font-bold text-white text-sm">CBE Birr</div>
+                            <div className="text-[10px] text-slate-400">Commercial Bank</div>
+                          </div>
+                          {paymentMethod === 'cbe_birr' && (
+                            <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-amber-400"></div>
+                          )}
+                        </button>
 
-                      {/* HelloCash */}
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod('hellocash')}
-                        className={`p-4 rounded-2xl border transition-all flex flex-col items-start gap-2 text-left cursor-pointer relative overflow-hidden group ${
-                          paymentMethod === 'hellocash'
+                        {/* HelloCash */}
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod('hellocash')}
+                          className={`p-4 rounded-2xl border transition-all flex flex-col items-start gap-2 text-left cursor-pointer relative overflow-hidden group ${paymentMethod === 'hellocash'
                             ? 'bg-emerald-500/10 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
                             : 'bg-slate-950/40 border-white/5 hover:border-white/10'
-                        }`}
-                      >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${
-                          paymentMethod === 'hellocash' ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'
-                        }`}>
-                          H
-                        </div>
-                        <div>
-                          <div className="font-bold text-white text-sm">HelloCash</div>
-                          <div className="text-[10px] text-slate-400">Lion/CBO Bank</div>
-                        </div>
-                        {paymentMethod === 'hellocash' && (
-                          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-400"></div>
-                        )}
-                      </button>
+                            }`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${paymentMethod === 'hellocash' ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'
+                            }`}>
+                            H
+                          </div>
+                          <div>
+                            <div className="font-bold text-white text-sm">HelloCash</div>
+                            <div className="text-[10px] text-slate-400">Lion/CBO Bank</div>
+                          </div>
+                          {paymentMethod === 'hellocash' && (
+                            <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-400"></div>
+                          )}
+                        </button>
 
-                      {/* E-Birr */}
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod('ebirr')}
-                        className={`p-4 rounded-2xl border transition-all flex flex-col items-start gap-2 text-left cursor-pointer relative overflow-hidden group ${
-                          paymentMethod === 'ebirr'
+                        {/* E-Birr */}
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod('ebirr')}
+                          className={`p-4 rounded-2xl border transition-all flex flex-col items-start gap-2 text-left cursor-pointer relative overflow-hidden group ${paymentMethod === 'ebirr'
                             ? 'bg-fuchsia-500/10 border-fuchsia-400 shadow-[0_0_15px_rgba(217,70,239,0.15)]'
                             : 'bg-slate-950/40 border-white/5 hover:border-white/10'
-                        }`}
-                      >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${
-                          paymentMethod === 'ebirr' ? 'bg-fuchsia-500 text-white' : 'bg-slate-800 text-slate-400'
-                        }`}>
-                          E
-                        </div>
-                        <div>
-                          <div className="font-bold text-white text-sm">E-Birr</div>
-                          <div className="text-[10px] text-slate-400">Unified Payment</div>
-                        </div>
-                        {paymentMethod === 'ebirr' && (
-                          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-fuchsia-400"></div>
-                        )}
-                      </button>
+                            }`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${paymentMethod === 'ebirr' ? 'bg-fuchsia-500 text-white' : 'bg-slate-800 text-slate-400'
+                            }`}>
+                            E
+                          </div>
+                          <div>
+                            <div className="font-bold text-white text-sm">E-Birr</div>
+                            <div className="text-[10px] text-slate-400">Unified Payment</div>
+                          </div>
+                          {paymentMethod === 'ebirr' && (
+                            <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-fuchsia-400"></div>
+                          )}
+                        </button>
 
-                    </div>
-                  </div>
-
-                  {/* Account Details */}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                        {paymentMethod === 'cbe_birr' ? 'CBE Account Number / Phone' : 'Mobile Number'}
-                      </label>
-                      <input 
-                        type="text" 
-                        required
-                        value={accountNumber}
-                        onChange={(e) => setAccountNumber(e.target.value)}
-                        placeholder={paymentMethod === 'cbe_birr' ? '1000xxxxxxxx' : '09xxxxxxxx'} 
-                        className="w-full bg-slate-950 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-fuchsia-500 font-mono tracking-wider transition-colors shadow-inner"
-                      />
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Recharge Amount (ꓭ)</label>
-                      <div className="grid grid-cols-4 gap-2 mb-3">
-                        {['50', '100', '500', '1000'].map((val) => (
-                          <button
-                            type="button"
-                            key={val}
-                            onClick={() => setDepositAmount(val)}
-                            className={`py-2 rounded-xl border text-sm font-bold transition-all cursor-pointer ${
-                              depositAmount === val
+                    {/* Account Details */}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                          {paymentMethod === 'cbe_birr' ? 'CBE Account Number / Phone' : 'Mobile Number'}
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={accountNumber}
+                          onChange={(e) => setAccountNumber(e.target.value)}
+                          placeholder={paymentMethod === 'cbe_birr' ? '1000xxxxxxxx' : '09xxxxxxxx'}
+                          className="w-full bg-slate-950 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-fuchsia-500 font-mono tracking-wider transition-colors shadow-inner"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Recharge Amount (ꓭ)</label>
+                        <div className="grid grid-cols-4 gap-2 mb-3">
+                          {['50', '100', '500', '1000'].map((val) => (
+                            <button
+                              type="button"
+                              key={val}
+                              onClick={() => setDepositAmount(val)}
+                              className={`py-2 rounded-xl border text-sm font-bold transition-all cursor-pointer ${depositAmount === val
                                 ? 'bg-fuchsia-600 border-fuchsia-500 text-white shadow-lg'
                                 : 'bg-slate-950/50 border-white/5 text-slate-400 hover:border-white/10 hover:text-white'
-                            }`}
-                          >
-                            +{val}
-                          </button>
-                        ))}
+                                }`}
+                            >
+                              +{val}
+                            </button>
+                          ))}
+                        </div>
+                        <input
+                          type="number"
+                          required
+                          value={depositAmount}
+                          onChange={(e) => setDepositAmount(e.target.value)}
+                          placeholder="Enter custom amount"
+                          className="w-full bg-slate-950 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-fuchsia-500 font-bold transition-colors shadow-inner"
+                        />
                       </div>
-                      <input 
-                        type="number" 
-                        required
-                        value={depositAmount}
-                        onChange={(e) => setDepositAmount(e.target.value)}
-                        placeholder="Enter custom amount" 
-                        className="w-full bg-slate-950 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-fuchsia-500 font-bold transition-colors shadow-inner"
-                      />
                     </div>
-                  </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-4 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowDepositModal(false)}
-                      className="flex-1 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold rounded-2xl transition-all cursor-pointer text-center text-sm"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="flex-1 py-3.5 bg-gradient-to-r from-fuchsia-600 to-indigo-600 hover:from-fuchsia-500 hover:to-indigo-500 text-white font-bold rounded-2xl transition-all shadow-[0_4px_20px_rgba(192,38,211,0.4)] active:scale-98 cursor-pointer text-center text-sm"
-                    >
-                      Pay & Confirm Deposit
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
+                    {/* Actions */}
+                    <div className="flex gap-4 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowDepositModal(false)}
+                        className="flex-1 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold rounded-2xl transition-all cursor-pointer text-center text-sm"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-3.5 bg-gradient-to-r from-fuchsia-600 to-indigo-600 hover:from-fuchsia-500 hover:to-indigo-500 text-white font-bold rounded-2xl transition-all shadow-[0_4px_20px_rgba(192,38,211,0.4)] active:scale-98 cursor-pointer text-center text-sm"
+                      >
+                        Pay & Confirm Deposit
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
 
-            {depositStatus === 'processing' && (
-              <div className="py-12 flex flex-col items-center justify-center text-center">
-                <div className="w-16 h-16 border-4 border-fuchsia-500/20 border-t-fuchsia-500 rounded-full animate-spin mb-6"></div>
-                <h3 className="text-xl font-bold text-white mb-2">Connecting to Secure Payment Gateway</h3>
-                <p className="text-slate-400 text-sm max-w-xs">
-                  Please hold on as we authorize your recharge request with <strong>{paymentMethod === 'cbe_birr' ? 'CBE Birr' : paymentMethod === 'telebirr' ? 'telebirr' : paymentMethod === 'hellocash' ? 'HelloCash' : 'E-Birr'}</strong>...
-                </p>
-              </div>
-            )}
-
-            {depositStatus === 'success' && (
-              <div className="py-12 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-200">
-                <div className="w-16 h-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500 text-emerald-400 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              {depositStatus === 'processing' && (
+                <div className="py-12 flex flex-col items-center justify-center text-center">
+                  <div className="w-16 h-16 border-4 border-fuchsia-500/20 border-t-fuchsia-500 rounded-full animate-spin mb-6"></div>
+                  <h3 className="text-xl font-bold text-white mb-2">Connecting to Secure Payment Gateway</h3>
+                  <p className="text-slate-400 text-sm max-w-xs">
+                    Please hold on as we authorize your recharge request with <strong>{paymentMethod === 'cbe_birr' ? 'CBE Birr' : paymentMethod === 'telebirr' ? 'telebirr' : paymentMethod === 'hellocash' ? 'HelloCash' : 'E-Birr'}</strong>...
+                  </p>
                 </div>
-                <h3 className="text-2xl font-black text-white mb-2">Payment Authorized!</h3>
-                <p className="text-slate-400 text-sm max-w-xs">
-                  Recharged <strong>ꓭ {Number(depositAmount).toLocaleString()}</strong> successfully to your wallet balance. Enjoy the Bingo rooms!
-                </p>
-              </div>
-            )}
+              )}
+
+              {depositStatus === 'success' && (
+                <div className="py-12 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-200">
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500 text-emerald-400 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </div>
+                  <h3 className="text-2xl font-black text-white mb-2">Payment Authorized!</h3>
+                  <p className="text-slate-400 text-sm max-w-xs">
+                    Recharged <strong>ꓭ {Number(depositAmount).toLocaleString()}</strong> successfully to your wallet balance. Enjoy the Bingo rooms!
+                  </p>
+                </div>
+              )}
 
             </div>
           </div>
@@ -658,7 +646,7 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
         <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/90 backdrop-blur-md transition-opacity duration-300">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <div className="relative w-full max-w-md bg-slate-900 border-2 border-sky-500 rounded-3xl p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-left align-middle">
-              
+
               {/* Telebirr Brand Header */}
               <div className="flex flex-col items-center pb-6 border-b border-white/10 mb-6 text-center">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 flex items-center justify-center text-white text-3xl font-black shadow-lg mb-3">
@@ -722,7 +710,7 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
               {depositStatus === 'success' && (
                 <div className="py-12 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-200">
                   <div className="w-16 h-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500 text-emerald-400 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                   </div>
                   <h3 className="text-2xl font-black text-white mb-2">Sandbox Payment Success!</h3>
                   <p className="text-slate-400 text-sm max-w-xs">

@@ -32,10 +32,10 @@ export default async function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
-            <button className="px-8 py-4 rounded-full bg-gradient-to-r from-fuchsia-600 to-indigo-600 text-white font-bold text-lg hover:from-fuchsia-500 hover:to-indigo-500 transition-all transform hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(192,38,211,0.8)] active:scale-95 flex items-center justify-center gap-2">
+            <Link href="/lobby" className="px-8 py-4 rounded-full bg-gradient-to-r from-fuchsia-600 to-indigo-600 text-white font-bold text-lg hover:from-fuchsia-500 hover:to-indigo-500 transition-all transform hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(192,38,211,0.8)] active:scale-95 flex items-center justify-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
               Start Playing
-            </button>
+            </Link>
             <Link href="/how-to-play" className="px-8 py-4 rounded-full bg-white/5 border border-white/10 text-white font-bold text-lg hover:bg-white/10 transition-all backdrop-blur-sm flex items-center justify-center gap-2">
               Learn the Rules
             </Link>
