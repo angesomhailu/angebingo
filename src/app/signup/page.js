@@ -35,6 +35,7 @@ export default function SignUp() {
     const name = formData.get("username");
     const email = formData.get("email");
     const password = formData.get("password");
+    const phone = formData.get("phone");
 
     try {
       // Send the POST request to your new API
@@ -43,7 +44,7 @@ export default function SignUp() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, phone }),
       });
 
       if (response.ok) {
@@ -140,6 +141,17 @@ export default function SignUp() {
                 required
                 className="appearance-none relative block w-full px-5 py-3.5 bg-slate-950/50 border border-white/10 placeholder-slate-500 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent transition-all sm:text-sm"
                 placeholder="Email address"
+              />
+            </div>
+            <div>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                autoComplete="tel"
+                required
+                className="appearance-none relative block w-full px-5 py-3.5 bg-slate-950/50 border border-white/10 placeholder-slate-500 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent transition-all sm:text-sm"
+                placeholder="Phone Number (e.g. 09xxxxxxxx)"
               />
             </div>
             <div>

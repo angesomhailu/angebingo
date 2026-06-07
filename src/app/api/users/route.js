@@ -18,12 +18,12 @@ export async function GET() {
 export async function POST(request) {
     try {
         // Parse the incoming request data
-        const { name, email, password } = await request.json();
+        const { name, email, password, phone } = await request.json();
 
         // Basic validation
-        if (!name || !email || !password) {
+        if (!name || !email || !password || !phone) {
             return Response.json(
-                { error: "Name, email, and password are required" },
+                { error: "Name, email, password, and phone number are required" },
                 { status: 400 }
             );
         }
@@ -42,13 +42,13 @@ export async function POST(request) {
 
         // Save the new user to the "users" table
         const [result] = await pool.query(
-            'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)', 
-            [name, email, hashedPassword, role]
+            'INSERT INTO users (name, email, password, phone, role) VALUES (?, ?, ?, ?, ?)', 
+            [name, email, hashedPassword, phone, role]
         );
 
         // Return a successful response with the created user data
         return Response.json(
-            { message: "User registered successfully!", user: { id: result.insertId, name, email, role } },
+            { message: "User registered successfully!", user: { id: result.insertId, name, email, phone, role } },
             { status: 201 }
         );
     } catch (error) {

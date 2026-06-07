@@ -23,16 +23,31 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Check for mock payment params
+  const [mockPaymentParams, setMockPaymentParams] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const mockPay = urlParams.get('telebirr_mock_pay');
+      const outTradeNo = urlParams.get('outTradeNo');
+      const amount = urlParams.get('amount');
+      
+      if (mockPay === 'true' && outTradeNo && amount) {
+        setMockPaymentParams({ outTradeNo, amount: Number(amount) });
+      }
+    }
+  }, []);
+
   useEffect(() => {
     setIsClient(true);
     if (initialUser && initialUser.username) {
       localStorage.setItem('bingo_username', initialUser.username);
     }
-    const savedCoins = localStorage.getItem('bingo_coins');
-    if (savedCoins !== null) {
-      setCoins(Number(savedCoins));
-    } else {
+    // Always sync with the server balance on mount to ensure we have the real database balance
+    if (initialUser) {
       setCoins(initialUser.coins || 0);
+      localStorage.setItem('bingo_coins', String(initialUser.coins || 0));
     }
   }, [initialUser.coins, initialUser.username]);
 
@@ -49,13 +64,69 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
     localStorage.setItem('bingo_coins', String(newCoins));
   };
 
+  const handleSimulatePayment = async () => {
+    if (!mockPaymentParams) return;
+    setDepositStatus('processing');
+    try {
+      const res = await fetch('/api/payments/telebirr/mock-callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outTradeNo: mockPaymentParams.outTradeNo,
+          amount: mockPaymentParams.amount
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDepositStatus('success');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Clear query parameters and reload lobby
+        window.location.href = '/lobby';
+      } else {
+        alert("Simulated callback failed: " + data.error);
+        setDepositStatus('idle');
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error: " + err.message);
+      setDepositStatus('idle');
+    }
+  };
+
   const handleDepositSubmit = async (e) => {
     if (e) e.preventDefault();
     const amount = Number(depositAmount);
     if (!amount || amount <= 0) return;
 
     setDepositStatus('processing');
-    
+
+    if (paymentMethod === 'telebirr') {
+      try {
+        const response = await fetch('/api/payments/telebirr', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount,
+            username: initialUser.username
+          })
+        });
+        const data = await response.json();
+        if (data.success && data.toPayUrl) {
+          // Redirect to the Telebirr checkout page (or sandbox simulation redirect)
+          window.location.href = data.toPayUrl;
+          return;
+        } else {
+          alert(data.error || 'Failed to initiate Telebirr payment');
+          setDepositStatus('idle');
+        }
+      } catch (err) {
+        console.error("Telebirr checkout initiation failed:", err);
+        alert('Payment connection error: ' + err.message);
+        setDepositStatus('idle');
+      }
+      return;
+    }
+
     // Simulate real bank processing delay (1.5 seconds)
     await new Promise(resolve => setTimeout(resolve, 1500));
 
@@ -576,6 +647,89 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
                 </p>
               </div>
             )}
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Telebirr Sandbox Payment Simulator Modal */}
+      {mockPaymentParams && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/90 backdrop-blur-md transition-opacity duration-300">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <div className="relative w-full max-w-md bg-slate-900 border-2 border-sky-500 rounded-3xl p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-left align-middle">
+              
+              {/* Telebirr Brand Header */}
+              <div className="flex flex-col items-center pb-6 border-b border-white/10 mb-6 text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 flex items-center justify-center text-white text-3xl font-black shadow-lg mb-3">
+                  tb
+                </div>
+                <h3 className="text-2xl font-black text-white">telebirr</h3>
+                <p className="text-xs text-sky-400 font-bold uppercase tracking-wider mt-1">Sandbox Payment Simulator</p>
+              </div>
+
+              {depositStatus === 'idle' && (
+                <>
+                  <div className="space-y-4 mb-6">
+                    <div className="bg-slate-950 p-4 rounded-2xl border border-white/5 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400">Merchant:</span>
+                        <span className="text-white font-bold">AngeBingo</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400">Order ID:</span>
+                        <span className="text-white font-mono">{mockPaymentParams.outTradeNo}</span>
+                      </div>
+                      <div className="flex justify-between text-sm border-t border-white/5 pt-2 mt-2">
+                        <span className="text-slate-400">Payment Method:</span>
+                        <span className="text-sky-400 font-bold">Telebirr H5 Checkout</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-sky-500/10 border border-sky-500/20 p-4 rounded-2xl flex flex-col items-center justify-center py-6 text-center">
+                      <span className="text-xs text-sky-400 font-semibold uppercase tracking-wide mb-1">Total Amount</span>
+                      <span className="text-3xl font-black text-white tracking-tight">ꓭ {mockPaymentParams.amount.toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    <button
+                      onClick={handleSimulatePayment}
+                      className="w-full py-3.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold rounded-2xl transition-all shadow-[0_4px_20px_rgba(14,165,233,0.4)] active:scale-98 cursor-pointer text-center text-sm"
+                    >
+                      Authorize & Pay (Simulate Telebirr)
+                    </button>
+                    <button
+                      onClick={() => window.location.href = '/lobby'}
+                      className="w-full py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold rounded-2xl transition-all active:scale-98 cursor-pointer text-center text-sm"
+                    >
+                      Cancel Payment
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {depositStatus === 'processing' && (
+                <div className="py-12 flex flex-col items-center justify-center text-center">
+                  <div className="w-16 h-16 border-4 border-sky-500/20 border-t-sky-500 rounded-full animate-spin mb-6"></div>
+                  <h3 className="text-xl font-bold text-white mb-2">Processing Sandbox Payment</h3>
+                  <p className="text-slate-400 text-sm max-w-xs">
+                    Decrypting notification payload and crediting user account...
+                  </p>
+                </div>
+              )}
+
+              {depositStatus === 'success' && (
+                <div className="py-12 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-200">
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500 text-emerald-400 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <h3 className="text-2xl font-black text-white mb-2">Sandbox Payment Success!</h3>
+                  <p className="text-slate-400 text-sm max-w-xs">
+                    Credited <strong>ꓭ {mockPaymentParams.amount.toLocaleString()}</strong> to your balance. Redirecting back...
+                  </p>
+                </div>
+              )}
 
             </div>
           </div>

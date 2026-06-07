@@ -27,7 +27,17 @@ export default async function LobbyPage() {
       if (payload?.role === 'admin') {
         shouldRedirectToAdmin = true;
       }
-      if (payload?.name) user.username = payload.name;
+      if (payload?.name) {
+        user.username = payload.name;
+
+        // Fetch balance from transactions table in DB
+        const pool = await getDbConnection();
+        const [balanceRows] = await pool.query(
+          'SELECT SUM(amount) as balance FROM transactions WHERE username = ?',
+          [payload.name]
+        );
+        user.coins = Number(balanceRows[0]?.balance || 0);
+      }
     } catch (error) {
       console.error('Invalid session token:', error);
     }

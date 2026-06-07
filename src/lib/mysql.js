@@ -79,11 +79,19 @@ export async function getDbConnection() {
           name VARCHAR(255) NOT NULL,
           email VARCHAR(255) NOT NULL UNIQUE,
           password VARCHAR(255) NOT NULL,
+          phone VARCHAR(50) DEFAULT '',
           role VARCHAR(50) DEFAULT 'user',
           status VARCHAR(50) DEFAULT 'active',
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
+
+      // Migration: Add phone column to users if it doesn't exist
+      try {
+        await pool.query("ALTER TABLE users ADD COLUMN phone VARCHAR(50) DEFAULT ''");
+      } catch (err) {
+        // Ignored if column already exists
+      }
 
       // Migration: Add pattern column if it doesn't exist (MySQL/MariaDB fallback check)
       try {
