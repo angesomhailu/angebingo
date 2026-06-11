@@ -37,6 +37,13 @@ export default function SignUp() {
     const password = formData.get("password");
     const phone = formData.get("phone");
 
+    const phoneRegex = /^(09|07)\d{8}$|^251(9|7)\d{8}$/;
+    if (!phoneRegex.test(phone)) {
+      alert("Invalid Telebirr phone number. Must start with 09 or 07 and be 10 digits (e.g., 0912345678).");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       // Send the POST request to your new API
       const response = await fetch("/api/users", {

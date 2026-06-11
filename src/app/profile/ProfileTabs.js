@@ -5,7 +5,9 @@ import { useState } from "react";
 export default function ProfileTabs({ user }) {
   const [activeTab, setActiveTab] = useState("profile");
   const [username, setUsername] = useState(user?.name || "Player");
+  const [phone, setPhone] = useState(user?.phone || "");
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [isToggled2FA, setIsToggled2FA] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [notifications, setNotifications] = useState({
@@ -14,10 +16,27 @@ export default function ProfileTabs({ user }) {
     offers: false,
   });
 
-  const handleSaveProfile = (e) => {
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
-    setSuccessMessage("Changes saved successfully!");
-    setTimeout(() => setSuccessMessage(""), 3000);
+    setErrorMessage("");
+    setSuccessMessage("");
+    try {
+      const response = await fetch("/api/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: username, phone }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setSuccessMessage("Changes saved successfully!");
+        setTimeout(() => setSuccessMessage(""), 3000);
+      } else {
+        setErrorMessage(data.error || "Failed to update profile");
+      }
+    } catch (err) {
+      console.error("Failed to save profile:", err);
+      setErrorMessage("An error occurred. Please try again.");
+    }
   };
 
   const tabs = [
@@ -60,6 +79,11 @@ export default function ProfileTabs({ user }) {
         {successMessage && (
           <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-semibold animate-fade-in">
             {successMessage}
+          </div>
+        )}
+        {errorMessage && (
+          <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-semibold animate-fade-in">
+            {errorMessage}
           </div>
         )}
 
@@ -134,6 +158,18 @@ export default function ProfileTabs({ user }) {
                   className="w-full bg-slate-950/50 border border-white/5 rounded-xl px-4 py-3 text-slate-500 cursor-not-allowed shadow-inner"
                 />
                 <span className="text-xs text-slate-600 mt-1 block">Email address cannot be changed. Contact support to update email.</span>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Phone Number (Telebirr)</label>
+                <input
+                  type="text"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="09xxxxxxxx"
+                  required
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-500 transition-colors shadow-inner font-mono"
+                />
+                <span className="text-xs text-slate-600 mt-1 block">Must start with 09 or 07 (e.g. 0912345678) to match your Telebirr deposit account.</span>
               </div>
               
               <div className="pt-2">

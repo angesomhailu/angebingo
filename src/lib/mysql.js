@@ -82,6 +82,7 @@ export async function getDbConnection() {
           phone VARCHAR(50) DEFAULT '',
           role VARCHAR(50) DEFAULT 'user',
           status VARCHAR(50) DEFAULT 'active',
+          current_room_id INT DEFAULT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
@@ -89,6 +90,13 @@ export async function getDbConnection() {
       // Migration: Add phone column to users if it doesn't exist
       try {
         await pool.query("ALTER TABLE users ADD COLUMN phone VARCHAR(50) DEFAULT ''");
+      } catch (err) {
+        // Ignored if column already exists
+      }
+
+      // Migration: Add current_room_id column to users if it doesn't exist
+      try {
+        await pool.query("ALTER TABLE users ADD COLUMN current_room_id INT DEFAULT NULL");
       } catch (err) {
         // Ignored if column already exists
       }

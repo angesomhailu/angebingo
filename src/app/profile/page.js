@@ -19,7 +19,14 @@ export default async function ProfilePage() {
   let shouldRedirect = false;
   try {
     const { payload } = await jwtVerify(sessionToken, secretKey);
-    user = payload;
+    const { getDbConnection } = await import('@/src/lib/mysql');
+    const pool = await getDbConnection();
+    const [rows] = await pool.query('SELECT id, name, email, phone, role FROM users WHERE id = ?', [payload.id]);
+    if (rows.length > 0) {
+      user = rows[0];
+    } else {
+      user = payload;
+    }
   } catch (error) {
     shouldRedirect = true;
   }

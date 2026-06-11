@@ -7,7 +7,7 @@ export default async function LeaderboardPage() {
   let dbUsers = [];
   try {
     const pool = await getDbConnection();
-    const [rows] = await pool.query('SELECT id, name FROM users ORDER BY id ASC LIMIT 10');
+    const [rows] = await pool.query("SELECT id, name FROM users WHERE role != 'admin' ORDER BY id ASC LIMIT 10");
     dbUsers = rows;
   } catch (error) {
     console.error("Failed to load users for leaderboard:", error?.message || error?.code || String(error));

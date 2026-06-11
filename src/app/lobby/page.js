@@ -30,13 +30,21 @@ export default async function LobbyPage() {
       if (payload?.name) {
         user.username = payload.name;
 
-        // Fetch balance from transactions table in DB
+        // Fetch balance and phone number from DB
         const pool = await getDbConnection();
         const [balanceRows] = await pool.query(
           'SELECT SUM(amount) as balance FROM transactions WHERE username = ?',
           [payload.name]
         );
         user.coins = Number(balanceRows[0]?.balance || 0);
+
+        const [userRows] = await pool.query(
+          'SELECT phone FROM users WHERE name = ?',
+          [payload.name]
+        );
+        if (userRows.length > 0) {
+          user.phone = userRows[0].phone || '';
+        }
       }
     } catch (error) {
       console.error('Invalid session token:', error);
@@ -52,19 +60,32 @@ export default async function LobbyPage() {
   let activeRooms = [];
   try {
     const pool = await getDbConnection();
-    const [rows] = await pool.query('SELECT id, name FROM users ORDER BY id ASC LIMIT 5');
+    const [rows] = await pool.query("SELECT id, name FROM users WHERE role != 'admin' ORDER BY id ASC LIMIT 5");
     topPlayers = rows;
+
+    // Fetch counts of players currently in each room
+    const [playerCountRows] = await pool.query(`
+      SELECT current_room_id, COUNT(*) as count 
+      FROM users 
+      WHERE role != 'admin' AND current_room_id IS NOT NULL 
+      GROUP BY current_room_id
+    `);
+    
+    const roomPlayersMap = {};
+    playerCountRows.forEach(row => {
+      roomPlayersMap[row.current_room_id] = row.count;
+    });
 
     const [roomRows] = await pool.query('SELECT * FROM rooms ORDER BY id ASC');
     activeRooms = roomRows.map(r => {
-      const mockPlayers = r.id === 1 ? 34 : r.id === 2 ? 48 : r.id === 3 ? 12 : r.id === 4 ? 22 : Math.floor(Math.random() * r.max_players);
+      const actualPlayers = roomPlayersMap[r.id] || 0;
       return {
         id: r.id,
         name: r.name,
         entryFee: r.entry_fee,
         prize: r.prize,
         maxPlayers: r.max_players,
-        players: mockPlayers,
+        players: actualPlayers,
         color: r.color,
         glow: r.glow,
         hot: !!r.hot,

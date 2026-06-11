@@ -10,12 +10,19 @@ export async function GET(req, { params }) {
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
     const r = rows[0];
+    const [userCountRows] = await pool.query(
+      "SELECT COUNT(*) as count FROM users WHERE role != 'admin' AND current_room_id = ?",
+      [Number(id)]
+    );
+    const actualPlayers = userCountRows[0].count;
+
     return NextResponse.json({
       id: r.id,
       name: r.name,
       entryFee: r.entry_fee,
       prize: r.prize,
       maxPlayers: r.max_players,
+      players: actualPlayers,
       color: r.color,
       glow: r.glow,
       hot: !!r.hot,

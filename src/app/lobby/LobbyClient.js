@@ -18,7 +18,7 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
   // Deposit specific states
   const [paymentMethod, setPaymentMethod] = useState('telebirr'); // 'telebirr' | 'cbe_birr' | 'hellocash' | 'ebirr'
   const [depositAmount, setDepositAmount] = useState('100');
-  const [accountNumber, setAccountNumber] = useState('');
+  const [accountNumber, setAccountNumber] = useState(initialUser?.phone || '');
   const [depositStatus, setDepositStatus] = useState('idle'); // 'idle' | 'processing' | 'success'
 
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -44,12 +44,15 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
     if (initialUser && initialUser.username) {
       localStorage.setItem('bingo_username', initialUser.username);
     }
+    if (initialUser && initialUser.phone) {
+      setAccountNumber(initialUser.phone);
+    }
     // Always sync with the server balance on mount to ensure we have the real database balance
     if (initialUser) {
       setCoins(initialUser.coins || 0);
       localStorage.setItem('bingo_coins', String(initialUser.coins || 0));
     }
-  }, [initialUser.coins, initialUser.username]);
+  }, [initialUser.coins, initialUser.username, initialUser.phone]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -454,99 +457,17 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
                   </div>
 
                   <form onSubmit={handleDepositSubmit} className="space-y-6">
-                    {/* Payment Methods */}
+                    {/* Payment Method Details */}
                     <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Select Payment Method</label>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-
-                        {/* Telebirr */}
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod('telebirr')}
-                          className={`p-4 rounded-2xl border transition-all flex flex-col items-start gap-2 text-left cursor-pointer relative overflow-hidden group ${paymentMethod === 'telebirr'
-                            ? 'bg-sky-500/10 border-sky-400 shadow-[0_0_15px_rgba(14,165,233,0.15)]'
-                            : 'bg-slate-950/40 border-white/5 hover:border-white/10'
-                            }`}
-                        >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${paymentMethod === 'telebirr' ? 'bg-sky-500 text-white' : 'bg-slate-800 text-slate-400'
-                            }`}>
-                            T
-                          </div>
-                          <div>
-                            <div className="font-bold text-white text-sm">telebirr</div>
-                            <div className="text-[10px] text-slate-400">Ethio Telecom</div>
-                          </div>
-                          {paymentMethod === 'telebirr' && (
-                            <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-sky-400"></div>
-                          )}
-                        </button>
-
-                        {/* CBE Birr */}
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod('cbe_birr')}
-                          className={`p-4 rounded-2xl border transition-all flex flex-col items-start gap-2 text-left cursor-pointer relative overflow-hidden group ${paymentMethod === 'cbe_birr'
-                            ? 'bg-amber-500/10 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.15)]'
-                            : 'bg-slate-950/40 border-white/5 hover:border-white/10'
-                            }`}
-                        >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${paymentMethod === 'cbe_birr' ? 'bg-amber-500 text-white' : 'bg-slate-800 text-slate-400'
-                            }`}>
-                            C
-                          </div>
-                          <div>
-                            <div className="font-bold text-white text-sm">CBE Birr</div>
-                            <div className="text-[10px] text-slate-400">Commercial Bank</div>
-                          </div>
-                          {paymentMethod === 'cbe_birr' && (
-                            <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-amber-400"></div>
-                          )}
-                        </button>
-
-                        {/* HelloCash */}
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod('hellocash')}
-                          className={`p-4 rounded-2xl border transition-all flex flex-col items-start gap-2 text-left cursor-pointer relative overflow-hidden group ${paymentMethod === 'hellocash'
-                            ? 'bg-emerald-500/10 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
-                            : 'bg-slate-950/40 border-white/5 hover:border-white/10'
-                            }`}
-                        >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${paymentMethod === 'hellocash' ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'
-                            }`}>
-                            H
-                          </div>
-                          <div>
-                            <div className="font-bold text-white text-sm">HelloCash</div>
-                            <div className="text-[10px] text-slate-400">Lion/CBO Bank</div>
-                          </div>
-                          {paymentMethod === 'hellocash' && (
-                            <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-400"></div>
-                          )}
-                        </button>
-
-                        {/* E-Birr */}
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod('ebirr')}
-                          className={`p-4 rounded-2xl border transition-all flex flex-col items-start gap-2 text-left cursor-pointer relative overflow-hidden group ${paymentMethod === 'ebirr'
-                            ? 'bg-fuchsia-500/10 border-fuchsia-400 shadow-[0_0_15px_rgba(217,70,239,0.15)]'
-                            : 'bg-slate-950/40 border-white/5 hover:border-white/10'
-                            }`}
-                        >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${paymentMethod === 'ebirr' ? 'bg-fuchsia-500 text-white' : 'bg-slate-800 text-slate-400'
-                            }`}>
-                            E
-                          </div>
-                          <div>
-                            <div className="font-bold text-white text-sm">E-Birr</div>
-                            <div className="text-[10px] text-slate-400">Unified Payment</div>
-                          </div>
-                          {paymentMethod === 'ebirr' && (
-                            <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-fuchsia-400"></div>
-                          )}
-                        </button>
-
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Selected Payment Method</label>
+                      <div className="p-4 rounded-2xl border bg-sky-500/10 border-sky-400 shadow-[0_0_15px_rgba(14,165,233,0.15)] flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg flex items-center justify-center font-black bg-sky-500 text-white">
+                          T
+                        </div>
+                        <div>
+                          <div className="font-bold text-white text-sm">telebirr</div>
+                          <div className="text-xs text-sky-400">Ethio Telecom H5 Gateway (Only Available Method)</div>
+                        </div>
                       </div>
                     </div>
 
@@ -554,16 +475,19 @@ export default function LobbyClient({ initialUser, initialTopPlayers, initialRoo
                     <div className="space-y-4">
                       <div>
                         <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                          {paymentMethod === 'cbe_birr' ? 'CBE Account Number / Phone' : 'Mobile Number'}
+                          Telebirr Registered Mobile Number
                         </label>
                         <input
                           type="text"
                           required
+                          readOnly
                           value={accountNumber}
-                          onChange={(e) => setAccountNumber(e.target.value)}
-                          placeholder={paymentMethod === 'cbe_birr' ? '1000xxxxxxxx' : '09xxxxxxxx'}
-                          className="w-full bg-slate-950 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-fuchsia-500 font-mono tracking-wider transition-colors shadow-inner"
+                          className="w-full bg-slate-950/80 border border-white/10 rounded-2xl px-4 py-3 text-slate-400 font-mono tracking-wider transition-colors shadow-inner cursor-not-allowed"
+                          placeholder="09xxxxxxxx"
                         />
+                        <p className="text-[11px] text-slate-500 mt-1.5">
+                          Payments must be initiated using your registered phone number.
+                        </p>
                       </div>
 
                       <div>

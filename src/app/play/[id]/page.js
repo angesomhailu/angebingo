@@ -60,10 +60,18 @@ export default function GameRoom({ params }) {
   const [username, setUsername] = useState('PlayerOne');
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load live room configuration from API
+  // Load live room configuration from API and mark user as active in room
   useEffect(() => {
-    async function loadRoomConfig() {
+    async function initRoom() {
       try {
+        // 1. Update active room in database
+        await fetch('/api/users/active-room', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomId })
+        });
+
+        // 2. Fetch room details
         const res = await fetch(`/api/rooms/${roomId}`);
         const data = await res.json();
         if (data && !data.error) {
@@ -71,7 +79,7 @@ export default function GameRoom({ params }) {
             name: data.name,
             entryFee: data.entryFee,
             basePrize: data.prize,
-            initialPlayers: data.id === 1 ? 34 : data.id === 2 ? 48 : data.id === 3 ? 12 : data.id === 4 ? 22 : Math.floor(data.maxPlayers * 0.6),
+            initialPlayers: data.players || 0,
             maxPlayers: data.maxPlayers,
             pattern: data.pattern
           };
@@ -93,10 +101,20 @@ export default function GameRoom({ params }) {
           }
         }
       } catch (err) {
-        console.error("Failed to load room config:", err);
+        console.error("Failed to initialize game room:", err);
       }
     }
-    loadRoomConfig();
+    initRoom();
+
+    return () => {
+      // Clear active room on unmount
+      fetch('/api/users/active-room', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId: null }),
+        keepalive: true
+      }).catch(err => console.error("Failed to clear active room on unmount:", err));
+    };
   }, [roomId]);
 
   // Load username
@@ -124,20 +142,7 @@ export default function GameRoom({ params }) {
     }
   }, [roomId, room.initialPlayers]);
 
-  // Simulate other players joining the room over time
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPlayersCount(prev => {
-        if (prev <= 0) return room.initialPlayers;
-        if (prev >= room.maxPlayers) {
-          return Math.random() > 0.85 ? prev - 1 : prev;
-        }
-        return Math.random() > 0.25 ? prev + 1 : prev;
-      });
-    }, 6000);
-
-    return () => clearInterval(interval);
-  }, [room.maxPlayers, room.initialPlayers]);
+  // No simulated player joining simulation - players are entirely real-time active users.
 
   // Load state from localStorage on mount
   useEffect(() => {
