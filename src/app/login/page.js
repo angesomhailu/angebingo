@@ -51,7 +51,12 @@ export default function Login() {
         router.refresh(); // Refresh to update navbar state
       } else {
         const errorData = await response.json();
-        alert(errorData.error || "Login failed");
+        if (errorData.status === 'unverified') {
+          alert("Your email is not verified yet. Redirecting to verification page...");
+          router.push(`/verify-email?email=${encodeURIComponent(errorData.email)}`);
+        } else {
+          alert(errorData.error || "Login failed");
+        }
       }
     } catch (error) {
       console.error("Login error:", error);

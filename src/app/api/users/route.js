@@ -1,5 +1,7 @@
 import { getDbConnection } from "@/src/lib/mysql";
 
+import { sendVerificationEmail } from "@/src/lib/email";
+
 export async function GET() {
     try {
         const pool = await getDbConnection();
@@ -47,15 +49,38 @@ export async function POST(request) {
             role = 'admin';
         }
 
+        // Generate verification code (6-digit code)
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+        const verificationExpires = expires.toISOString().slice(0, 19).replace('T', ' ');
+
+        // If admin, auto-verify email, otherwise email_verified = 0
+        const emailVerified = role === 'admin' ? 1 : 0;
+
         // Save the new user to the "users" table
         const [result] = await pool.query(
-            'INSERT INTO users (name, email, password, phone, role) VALUES (?, ?, ?, ?, ?)', 
-            [name, email, hashedPassword, phone, role]
+            'INSERT INTO users (name, email, password, phone, role, email_verified, verification_code, verification_expires) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
+            [name, email, hashedPassword, phone, role, emailVerified, verificationCode, verificationExpires]
         );
+
+        // Send verification email (non-blocking, logs errors but lets user sign up)
+        let emailResult = { fallback: true };
+        if (emailVerified === 0) {
+            try {
+                emailResult = await sendVerificationEmail(email, name, verificationCode);
+            } catch (err) {
+                console.error("Failed to send verification email:", err);
+            }
+        }
 
         // Return a successful response with the created user data
         return Response.json(
-            { message: "User registered successfully!", user: { id: result.insertId, name, email, phone, role } },
+            { 
+                message: "User registered successfully! Please verify your email.", 
+                user: { id: result.insertId, name, email, phone, role },
+                emailVerified,
+                devVerificationCode: emailResult.fallback ? verificationCode : null
+            },
             { status: 201 }
         );
     } catch (error) {

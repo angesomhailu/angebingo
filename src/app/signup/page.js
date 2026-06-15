@@ -55,9 +55,14 @@ export default function SignUp() {
       });
 
       if (response.ok) {
-        // If successful, you can redirect the user
-        alert("Successfully! You are Registered.");
-        router.push("/lobby");
+        const data = await response.json();
+        alert("Signup successful! Please verify your email to activate your account.");
+        if (data.emailVerified) {
+          router.push("/lobby");
+        } else {
+          const devParam = data.devVerificationCode ? `&devCode=${encodeURIComponent(data.devVerificationCode)}` : "";
+          router.push(`/verify-email?email=${encodeURIComponent(email)}${devParam}`);
+        }
       } else {
         // Handle errors
         const errorData = await response.json();

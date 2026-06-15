@@ -44,6 +44,13 @@ export async function POST(request) {
             );
         }
 
+        if (!user.email_verified) {
+            return Response.json(
+                { error: "Email not verified", email: user.email, status: 'unverified' },
+                { status: 403 }
+            );
+        }
+
         // Create JWT
         const token = await new SignJWT({ id: user.id, name: user.name, email: user.email, role: user.role })
             .setProtectedHeader({ alg: 'HS256' })

@@ -83,6 +83,9 @@ export async function getDbConnection() {
           role VARCHAR(50) DEFAULT 'user',
           status VARCHAR(50) DEFAULT 'active',
           current_room_id INT DEFAULT NULL,
+          email_verified TINYINT DEFAULT 0,
+          verification_code VARCHAR(6) DEFAULT NULL,
+          verification_expires TIMESTAMP NULL DEFAULT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
@@ -97,6 +100,27 @@ export async function getDbConnection() {
       // Migration: Add current_room_id column to users if it doesn't exist
       try {
         await pool.query("ALTER TABLE users ADD COLUMN current_room_id INT DEFAULT NULL");
+      } catch (err) {
+        // Ignored if column already exists
+      }
+
+      // Migration: Add email_verified column to users if it doesn't exist
+      try {
+        await pool.query("ALTER TABLE users ADD COLUMN email_verified TINYINT DEFAULT 0");
+      } catch (err) {
+        // Ignored if column already exists
+      }
+
+      // Migration: Add verification_code column to users if it doesn't exist
+      try {
+        await pool.query("ALTER TABLE users ADD COLUMN verification_code VARCHAR(6) DEFAULT NULL");
+      } catch (err) {
+        // Ignored if column already exists
+      }
+
+      // Migration: Add verification_expires column to users if it doesn't exist
+      try {
+        await pool.query("ALTER TABLE users ADD COLUMN verification_expires TIMESTAMP NULL DEFAULT NULL");
       } catch (err) {
         // Ignored if column already exists
       }
@@ -130,8 +154,8 @@ export async function getDbConnection() {
       if (userCountRows[0].count === 0) {
         const hashedPassword = await bcrypt.hash('admin123', 10);
         await pool.query(`
-          INSERT INTO users (name, email, password, role, status) VALUES
-          ('Admin', 'admin@gmail.com', ?, 'admin', 'active')
+          INSERT INTO users (name, email, password, role, status, email_verified) VALUES
+          ('Admin', 'admin@gmail.com', ?, 'admin', 'active', 1)
         `, [hashedPassword]);
       }
     } catch (err) {
