@@ -5,7 +5,7 @@ let pool;
 
 export async function getDbConnection() {
   if (!pool) {
-    const defaultUri = 'mysql://anu@127.0.0.1:3306/angebingo';
+    const defaultUri = 'mysql://anu@127.0.0.1:3307/angebingo';
     const uri = process.env.DATABASE_URL || process.env.MYSQL_URI || defaultUri;
     try {
       pool = mysql.createPool(uri);
@@ -93,6 +93,13 @@ export async function getDbConnection() {
       // Migration: Add phone column to users if it doesn't exist
       try {
         await pool.query("ALTER TABLE users ADD COLUMN phone VARCHAR(50) DEFAULT ''");
+      } catch (err) {
+        // Ignored if column already exists
+      }
+
+      // Migration: Add status column to users if it doesn't exist
+      try {
+        await pool.query("ALTER TABLE users ADD COLUMN status VARCHAR(50) DEFAULT 'active'");
       } catch (err) {
         // Ignored if column already exists
       }
