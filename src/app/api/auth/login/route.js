@@ -2,6 +2,8 @@ import { getDbConnection } from "@/src/lib/mysql";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import { cookies } from "next/headers";
+import { sendSignInAlertEmail } from "@/src/lib/email";
+import { sendSignInAlertSMS } from "@/src/lib/sms";
 
 const secretKey = new TextEncoder().encode(
   process.env.JWT_SECRET || 'fallback_secret_for_development_only_12345'
@@ -67,6 +69,16 @@ export async function POST(request) {
             path: '/',
             maxAge: 60 * 60 * 24 // 24 hours
         });
+
+        // Send login alert notifications
+        try {
+            await sendSignInAlertEmail(user.email, user.name);
+            if (user.phone) {
+                await sendSignInAlertSMS(user.phone, user.name);
+            }
+        } catch (err) {
+            console.error("Failed to send login notification alert:", err);
+        }
 
         return Response.json(
             { message: "Logged in successfully", user: { id: user.id, name: user.name, email: user.email, role: user.role } },

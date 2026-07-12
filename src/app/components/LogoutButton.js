@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 export default function LogoutButton({ className, children }) {
   const router = useRouter();
@@ -7,10 +8,12 @@ export default function LogoutButton({ className, children }) {
   const handleLogout = async () => {
     try {
       const res = await fetch("/api/auth/logout", { method: "POST" });
-      if (res.ok) {
-        router.push("/");
-        router.refresh();
-      }
+      
+      // Clear NextAuth session if active
+      await signOut({ redirect: false });
+
+      router.push("/");
+      router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
     }

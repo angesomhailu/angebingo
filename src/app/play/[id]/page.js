@@ -59,6 +59,7 @@ export default function GameRoom({ params }) {
   const [falseBingoMessage, setFalseBingoMessage] = useState('');
   const [username, setUsername] = useState('PlayerOne');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isDisqualified, setIsDisqualified] = useState(false);
 
   // Load live room configuration from API and mark user as active in room
   useEffect(() => {
@@ -152,7 +153,7 @@ export default function GameRoom({ params }) {
       if (savedStateStr) {
         try {
           const savedState = JSON.parse(savedStateStr);
-          if (savedState && !savedState.isFinished) {
+          if (savedState) {
             setCartelas(savedState.cartelas || []);
             setDaubedNumbers(new Set(savedState.daubedNumbers || ['FREE']));
             setCalledNumbers(savedState.calledNumbers || []);
@@ -163,6 +164,7 @@ export default function GameRoom({ params }) {
             setTimeLeft(savedState.timeLeft !== undefined ? savedState.timeLeft : 5);
             setShowWinModal(savedState.showWinModal || false);
             setWinPrize(savedState.winPrize || 0);
+            setIsDisqualified(savedState.isDisqualified || false);
             loaded = true;
           }
         } catch (err) {
@@ -202,7 +204,8 @@ export default function GameRoom({ params }) {
       timeLeft,
       showWinModal,
       winPrize,
-      isFinished: showWinModal
+      isDisqualified,
+      isFinished: showWinModal || isDisqualified
     };
 
     localStorage.setItem(`bingo_room_state_${roomId}`, JSON.stringify(stateToSave));
@@ -218,7 +221,8 @@ export default function GameRoom({ params }) {
     startCountdown,
     timeLeft,
     showWinModal,
-    winPrize
+    winPrize,
+    isDisqualified
   ]);
 
   const addCartela = () => {
@@ -232,7 +236,7 @@ export default function GameRoom({ params }) {
   };
 
   const toggleDaub = (number) => {
-    if (number === 'FREE') return;
+    if (number === 'FREE' || isDisqualified) return;
     // Only allow daubing if the number has actually been called
     if (!calledNumbers.includes(number)) {
       setFalseBingoMessage(`Number ${getLetterForNumber(number)}${number} has not been called yet!`);
@@ -467,7 +471,7 @@ export default function GameRoom({ params }) {
   };
 
   const handleBingoClaim = async () => {
-    if (!gameStarted) return;
+    if (!gameStarted || isDisqualified) return;
     
     // Check if any cartela is a winning one
     let hasWon = false;
@@ -503,11 +507,23 @@ export default function GameRoom({ params }) {
         console.error("Failed to log win transaction:", err);
       }
     } else {
-      // False Bingo: show temporary message
-      setFalseBingoMessage("False Bingo! You don't have a complete line yet.");
-      setTimeout(() => {
-        setFalseBingoMessage('');
-      }, 3000);
+      // Disqualify the player
+      setIsDisqualified(true);
+
+      // Log transaction to DB
+      try {
+        await fetch('/api/transactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: username,
+            type: 'disqualification',
+            amount: 0
+          })
+        });
+      } catch (err) {
+        console.error("Failed to log disqualification transaction:", err);
+      }
     }
   };
 
@@ -795,9 +811,9 @@ export default function GameRoom({ params }) {
               <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14a1 1 0 0 0 1-1v-1H4v1a1 1 0 0 0 1 1z"/></svg>
             </div>
 
-            <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-fuchsia-400 to-indigo-400 mb-2">BINGO! WINNER!</h2>
+            <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-fuchsia-400 to-indigo-400 mb-2">YOU WIN THE GAME!</h2>
             <p className="text-slate-300 text-sm mb-6 leading-relaxed">
-              Congratulations! Your cartela has achieved a winning line pattern.
+              Congratulations! Your prize money has been automatically deposited to your account.
             </p>
 
             <div className="bg-slate-950/50 border border-white/5 rounded-2xl p-4 mb-6">
@@ -812,6 +828,43 @@ export default function GameRoom({ params }) {
               <Link
                 href="/lobby"
                 className="w-full py-3.5 bg-gradient-to-r from-fuchsia-600 to-indigo-600 hover:from-fuchsia-500 hover:to-indigo-500 text-white font-bold rounded-xl transition-all shadow-[0_4px_15px_rgba(192,38,211,0.3)] active:scale-98 text-center text-sm cursor-pointer"
+              >
+                Back to Lobby
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bingo Disqualification Modal */}
+      {isDisqualified && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md transition-opacity duration-300">
+          <div className="relative w-full max-w-md bg-slate-900 border border-red-500/20 rounded-3xl p-8 shadow-[0_20px_60px_rgba(239,68,68,0.2)] text-center overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-red-600/25 rounded-full blur-2xl animate-pulse"></div>
+            <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-orange-600/10 rounded-full blur-2xl animate-pulse"></div>
+
+            {/* Disqualification Icon */}
+            <div className="w-20 h-20 rounded-full bg-red-500/10 border-2 border-red-500 text-red-400 flex items-center justify-center mb-6 mx-auto animate-bounce">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+
+            <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500 mb-2">DISQUALIFIED</h2>
+            <p className="text-slate-300 text-sm mb-6 leading-relaxed">
+              You clicked the Bingo button but you did not finish it correctly. You have been disqualified from this game room.
+            </p>
+
+            <div className="bg-slate-950/50 border border-white/5 rounded-2xl p-4 mb-6">
+              <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Entry Fee Forfeited</div>
+              <div className="text-2xl font-black text-red-400 flex items-center justify-center gap-2">
+                <span>ꓭ</span>
+                {room.entryFee}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <Link
+                href="/lobby"
+                className="w-full py-3.5 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold rounded-xl transition-all shadow-[0_4px_15px_rgba(239,68,68,0.3)] active:scale-98 text-center text-sm cursor-pointer"
               >
                 Back to Lobby
               </Link>

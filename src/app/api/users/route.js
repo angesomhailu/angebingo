@@ -1,6 +1,7 @@
 import { getDbConnection } from "@/src/lib/mysql";
 
 import { sendVerificationEmail } from "@/src/lib/email";
+import { sendVerificationSMS } from "@/src/lib/sms";
 
 export async function GET() {
     try {
@@ -63,13 +64,18 @@ export async function POST(request) {
             [name, email, hashedPassword, phone, role, emailVerified, verificationCode, verificationExpires]
         );
 
-        // Send verification email (non-blocking, logs errors but lets user sign up)
+        // Send verification email & SMS (non-blocking, logs errors but lets user sign up)
         let emailResult = { fallback: true };
         if (emailVerified === 0) {
             try {
                 emailResult = await sendVerificationEmail(email, name, verificationCode);
             } catch (err) {
                 console.error("Failed to send verification email:", err);
+            }
+            try {
+                await sendVerificationSMS(phone, name, verificationCode);
+            } catch (err) {
+                console.error("Failed to send verification SMS:", err);
             }
         }
 

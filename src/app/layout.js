@@ -2,9 +2,13 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { cookies } from 'next/headers';
-import { jwtVerify } from 'jose';
+import { jwtVerify, SignJWT } from 'jose';
+import Providers from "./components/provider";
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./api/auth/[...nextauth]/route";
+import { getDbConnection } from "@/src/lib/mysql";
 
 const secretKey = new TextEncoder().encode(
   process.env.JWT_SECRET || 'fallback_secret_for_development_only_12345'
@@ -39,18 +43,40 @@ export default async function RootLayout({ children }) {
     }
   }
 
+  // Fallback to NextAuth session (e.g. Google Login)
+  if (!user) {
+    try {
+      const nextSession = await getServerSession(authOptions);
+      if (nextSession?.user?.email) {
+        const pool = await getDbConnection();
+        let [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [nextSession.user.email]);
+        
+        if (rows.length > 0) {
+          const dbUser = rows[0];
+          if (dbUser.status !== 'suspended') {
+            user = { id: dbUser.id, name: dbUser.name, email: dbUser.email, role: dbUser.role };
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Failed to sync NextAuth session in layout:", error);
+    }
+  }
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-950 text-white selection:bg-fuchsia-500 selection:text-white font-sans overflow-x-hidden">
-        <Navbar user={user} />
-        <main className="flex-1 flex flex-col">
-          {children}
-        </main>
-        <Footer />
+        <Providers>
+          <Navbar user={user} />
+          <main className="flex-1 flex flex-col">
+            {children}
+          </main>
+          <Footer />
+        </Providers>
       </body>
-    </html>
+    </html >
   );
 }

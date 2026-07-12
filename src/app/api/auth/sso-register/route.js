@@ -2,6 +2,8 @@ import { getDbConnection } from "@/src/lib/mysql";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import { cookies } from "next/headers";
+import { sendWelcomeEmail, sendSignInAlertEmail } from "@/src/lib/email";
+import { sendWelcomeSMS, sendSignInAlertSMS } from "@/src/lib/sms";
 
 const secretKey = new TextEncoder().encode(
   process.env.JWT_SECRET || 'fallback_secret_for_development_only_12345'
@@ -47,6 +49,16 @@ export async function POST(request) {
             
             const [newUserRows] = await pool.query('SELECT * FROM users WHERE id = ?', [insertResult.insertId]);
             user = newUserRows[0];
+
+            // Send Welcome notification for SSO Signup
+            try {
+                await sendWelcomeEmail(user.email, user.name);
+                if (user.phone) {
+                    await sendWelcomeSMS(user.phone, user.name);
+                }
+            } catch (err) {
+                console.error("Failed to send welcome notifications for SSO registration:", err);
+            }
         } else {
             user = rows[0];
             if (user.status === 'suspended') {
@@ -54,6 +66,16 @@ export async function POST(request) {
                     { error: "Your account has been suspended. Please contact support." },
                     { status: 403 }
                 );
+            }
+
+            // Send Sign-In alert notification for existing SSO Login
+            try {
+                await sendSignInAlertEmail(user.email, user.name);
+                if (user.phone) {
+                    await sendSignInAlertSMS(user.phone, user.name);
+                }
+            } catch (err) {
+                console.error("Failed to send login alert notifications for SSO login:", err);
             }
         }
 

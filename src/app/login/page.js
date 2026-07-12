@@ -2,12 +2,17 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { signIn } from 'next-auth/react';
 
 export default function Login() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSSO = (provider) => {
+    if (provider === 'google') {
+      signIn('google', { callbackUrl: '/lobby' });
+      return;
+    }
     const width = 500;
     const height = 600;
     const left = window.screenX + (window.outerWidth - width) / 2;
